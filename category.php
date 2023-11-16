@@ -36,7 +36,7 @@
             <div class="row align-items-center">
                 <div class="col-lg-12">
                     <nav class="navbar navbar-expand-lg navbar-light">
-                        <a class="navbar-brand" href="index.html"> <img src="uglydolls/indexlogo.png" alt="logo"> </a>
+                        <a class="navbar-brand" href="index.php"> <img src="uglydolls/indexlogo.png" alt="logo"> </a>
                         <button class="navbar-toggler" type="button" data-toggle="collapse"
                             data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
                             aria-expanded="false" aria-label="Toggle navigation">
@@ -46,16 +46,16 @@
                         <div class="collapse navbar-collapse main-menu-item" id="navbarSupportedContent">
                             <ul class="navbar-nav">
                                 <li class="nav-item">
-                                    <a class="nav-link" href="index.html">Home</a>
+                                    <a class="nav-link" href="index.php">Home</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" href="category.html">Buy Uglydoll</a>
+                                    <a class="nav-link" href="category.php">Buy Uglydoll</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" href="login.html">Login</a>
+                                    <a class="nav-link" href="login.php">Login</a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" href="about.html">About</a>
+                                    <a class="nav-link" href="about.php">About</a>
                                 </li>
                             </ul>
                         </div>
@@ -79,137 +79,157 @@
     <!--================Home Banner Area =================-->
     <!-- breadcrumb start-->
     <section class="breadcrumb breadcrumb_bg">
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-lg-8">
-                    <div class="breadcrumb_iner">
-                        <div class="breadcrumb_iner_item">
-                            <h2>Buy Uglydoll!</h2>
-                            <p>You are on <span>-</span> Page 4</p>
-                        </div>
-                    </div>
-                </div>
+    <div class="container">
+      <div class="row justify-content-center">
+        <div>
+          <div class="breadcrumb_iner">
+            <div class="breadcrumb_iner_item">
+              <h2>Buy Uglydoll!</h2>
             </div>
+          </div>
         </div>
-    </section>
+      </div>
+    </div>
+</section>
     <!-- breadcrumb start-->
+                <?php
+// Connect to your database
+$con=mysqli_connect("localhost","root","","uglydolls");
+
+// Check connection
+if (mysqli_connect_errno()) {
+    echo "Failed to connect to MySQL: " . mysqli_connect_error();
+}
+
+// Get the selected filter from the URL
+$filter = isset($_GET['filter']) ? $_GET['filter'] : '';
+
+// page number from the query string
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+
+$productsPerPage = 9;
+
+$offset = ($page - 1) * $productsPerPage;
+
+// Fetch the count for each type from the database
+$typeCountsResult = $con->query("SELECT tipo, COUNT(*) as count FROM producto GROUP BY tipo");
+$typeCounts = [];
+while ($row = $typeCountsResult->fetch_assoc()) {
+    $typeCounts[$row['tipo']] = $row['count'];
+}
+
+// Modify the SQL query based on the selected filter
+if ($filter) {
+    $result = $con->query("SELECT productonum, foto, nombre, precio FROM producto WHERE tipo = '$filter' LIMIT $productsPerPage OFFSET $offset");
+    // total number of products for the selected filter
+    $totalProductsResult = $con->query("SELECT COUNT(*) as total FROM producto WHERE tipo = '$filter'");
+} else {
+    $result = $con->query("SELECT productonum, foto, nombre, precio FROM producto LIMIT $productsPerPage OFFSET $offset");
+    // total number of products
+    $totalProductsResult = $con->query("SELECT COUNT(*) as total FROM producto");
+}
+
+$totalProducts = $totalProductsResult->fetch_assoc()['total'];
+?>
+
 
     <!--================Category Product Area =================-->
     <section class="cat_product_area section_padding">
-        <div class="container">
-            <div class="row">
-                <div class="col-lg-3">
-                    <div class="left_sidebar_area">
-                        <aside class="left_widgets p_filter_widgets">
-                            <div class="l_w_title">
-                                <h3>Browse Categories</h3>
-                            </div>
-                            <div class="widgets_inner">
-                                <ul class="list">
-                                    <li>
-                                        <a href="#">Clip keychains</a>
-                                        <span>(15)</span>
-                                    </li>
-                                    <li>
-                                        <a href="#">Regular plush</a>
-                                        <span>(15)</span>
-                                    </li>
-                                </ul>
-                            </div>
-                        </aside>
-
-                        <aside class="left_widgets p_filter_widgets price_rangs_aside">
-                            <div class="l_w_title">
-                                <h3>Price Filter</h3>
-                            </div>
-                            <div class="widgets_inner">
-                                <div class="range_item">
-                                    <!-- <div id="slider-range"></div> -->
-                                    <input type="text" class="js-range-slider" value="" />
-                                    <div class="d-flex">
-                                        <div class="price_text">
-                                            <p>Price :</p>
-                                        </div>
-                                        <div class="price_value d-flex justify-content-center">
-                                            <input type="text" class="js-input-from" id="amount" readonly />
-                                            <span>to</span>
-                                            <input type="text" class="js-input-to" id="amount" readonly />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </aside>
-                    </div>
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-3">
+                <div class="left_sidebar_area">
+                <aside class="left_widgets p_filter_widgets">
+    <div class="l_w_title">
+        <h3>Filter Categories</h3>
+    </div>
+    <div class="widgets_inner">
+        <ul class="list">
+            <li>
+                <a href="category.php">All</a>
+                <span>(<?php echo array_sum($typeCounts); ?>)</span>
+            </li>
+            <?php foreach ($typeCounts as $type => $count): ?>
+            <li>
+                <a href="category.php?filter=<?php echo urlencode($type); ?>"><?php echo $type; ?></a>
+                <span>(<?php echo $count; ?>)</span>
+            </li>
+            <?php endforeach; ?>
+        </ul>
+    </div>
+</aside>
                 </div>
-                <div class="col-lg-9">
-                    <div class="row">
-                        <div class="col-lg-12">
-                            <div class="product_top_bar d-flex justify-content-between align-items-center">
-                                <div class="single_product_menu">
-                                    <p><span>30 </span> Products Found</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+            </div>
+            <div class="col-lg-9">
 
-                    <div class="row align-items-center latest_product_inner">
-                        <div class="col-lg-4 col-sm-6">
-                            <div class="single_product_item">
-                                <img src="uglydolls/pngs/trunkogrape.png" alt="">
-                                <div class="single_product_text">
-                                    <h4>Trunko - Grape</h4>
-                                    <h3>$11.00</h3>
-                                    <a href="#" class="add_cart">+ add to cart</a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-4 col-sm-6">
-                            <div class="single_product_item">
-                                <img src="uglydolls/pngs/wage.png" alt="">
-                                <div class="single_product_text">
-                                    <h4>Wage</h4>
-                                    <h3>$15.00</h3>
-                                    <a href="#" class="add_cart">+ add to cart</a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-4 col-sm-6">
-                            <div class="single_product_item">
-                                <img src="uglydolls/pngs/wippy.png" alt="">
-                                <div class="single_product_text">
-                                    <h4>Wippy</h4>
-                                    <h3>$9.00</h3>
-                                    <a href="#" class="add_cart">+ add to cart</a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-lg-12">
-                            <div class="pageination">
-                                <nav aria-label="Page navigation example">
-                                    <ul class="pagination justify-content-center">
-                                        <li class="page-item">
-                                            <a class="page-link" href="#" aria-label="Previous">
-                                                <i class="ti-angle-double-left"></i>
-                                            </a>
-                                        </li>
-                                        <li class="page-item"><a class="page-link" href="category.html">1</a></li>
-                                        <li class="page-item"><a class="page-link" href="category_page2.html">2</a></li>
-                                        <li class="page-item"><a class="page-link" href="category_page3.html">3</a></li>
-                                        <li class="page-item"><a class="page-link" href="category_page4.html"><b>4</b></a></li>
-                                        <li class="page-item">
-                                            <a class="page-link" href="#" aria-label="Next">
-                                                <i class="ti-angle-double-right"></i>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </nav>
-                            </div>
-                        </div>
-                    </div>
+
+<?php
+echo '<div class="col-lg-12">
+    <div class="product_top_bar d-flex justify-content-between align-items-center">
+        <div class="single_product_menu">
+            <p><span>' . $totalProducts . ' </span> Products Found</p>
+        </div>
+    </div>
+</div>';
+
+echo '<div class="row align-items-center">';
+if ($result->num_rows > 0) {
+    // rows
+    while($row = $result->fetch_assoc()) {
+        echo '<div class="col-lg-4 col-sm-6">
+            <div class="single_product_item">
+                <a href="single-product.php?id=' . $row["productonum"] . '">
+                    <img src="https://lab.anahuac.mx/~a00444232/pngs/' . $row["foto"] . '" alt="">
+                </a>
+                <div class="single_product_text">
+                    <h4>' . $row["nombre"] . '</h4>
+                    <h3>$' . $row["precio"] . '</h3>
+                    <a href="#" class="add_cart">+ add to cart</a>
+                </div>
+            </div>
+        </div>';
+    }    
+} else {
+    echo "No products found";
+}
+echo '</div>';
+
+// total number of pages
+$totalPages = ceil($totalProducts / $productsPerPage);
+
+// pagination links
+echo '<div class="col-lg-12">
+    <div class="pageination">
+        <nav aria-label="Page navigation example">
+            <ul class="pagination justify-content-center">
+                <li class="page-item">
+                    <a class="page-link" href="category.php?page=' . max(1, $page-1) . '&filter=' . urlencode($filter) . '" aria-label="Previous">
+                        <i class="ti-angle-double-left"></i>
+                    </a>
+                </li>';
+
+for ($i = 1; $i <= $totalPages; $i++) {
+    echo '<li class="page-item"><a class="page-link" href="category.php?page=' . $i . '&filter=' . urlencode($filter) . '">' . $i . '</a></li>';
+}
+
+echo '<li class="page-item">
+            <a class="page-link" href="category.php?page=' . min($totalPages, $page+1) . '&filter=' . urlencode($filter) . '" aria-label="Next">
+                <i class="ti-angle-double-right"></i>
+            </a>
+        </li>
+    </ul>
+</nav>
+</div>
+</div>';
+
+$con->close();
+?>
+
                 </div>
             </div>
         </div>
-    </section>
+    </div>
+</section>
     <!--================End Category Product Area =================-->
 
     <!-- product_list part start-->

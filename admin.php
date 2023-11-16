@@ -16,6 +16,7 @@
     </script>
 </head>
 <body>
+
 <?php
 $con=mysqli_connect("localhost","root","","uglydolls");
 
@@ -24,17 +25,15 @@ if (mysqli_connect_errno()) {
     echo "Failed to connect to MySQL: " . mysqli_connect_error();
 }
 
-$changes_made = false;
-
-// If form is submitted, insert new data into Producto or update stock
+// insert new data into Producto or update stock
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if(isset($_POST["update_stock"])) {
         $nombre = $_POST["fnum"];
         $stock_change = $_POST["stock_change"];
         $sql = "UPDATE producto SET stock = stock + '$stock_change' WHERE nombre = '$nombre'";
         if ($con->query($sql) === TRUE) {
-            echo "Stock updated successfully";
-            $changes_made = true;
+            header("Location: " . $_SERVER['REQUEST_URI']); // to same page
+            exit();
         } else {
             echo "Error: " . $sql . "<br>" . $con->error;
         }
@@ -50,17 +49,47 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         VALUES (NULL, '$nombre', '$descripcion', '$foto', '$precio', '$stock', '$tipo')";
 
         if ($con->query($sql) === TRUE) {
-            echo "New record created successfully";
-            $changes_made = true;
+            header("Location: " . $_SERVER['REQUEST_URI']); // to same page
+            exit();
         } else {
             echo "Error: " . $sql . "<br>" . $con->error;
         }
     }
 }
 
+if(isset($_POST["delete_product"])) {
+    $nombre = $_POST["fnum_del"];
+    $sql = "DELETE FROM producto WHERE nombre = '$nombre'";
+    if ($con->query($sql) === TRUE) {
+        header("Location: " . $_SERVER['REQUEST_URI']); // to same page
+        exit();
+    } else {
+        echo "Error: " . $sql . "<br>" . $con->error;
+    }
+}
+
+if(isset($_POST["update_product"])) {
+    $fnum = $_POST["fnum"];
+    $nombre = $_POST["nombre"];
+    $descripcion = $_POST["descripcion"];
+    $foto = $_POST["foto"];
+    $precio = $_POST["precio"];
+    $stock = $_POST["stock"];
+    $tipo = $_POST["tipo"];
+
+    $sql = "UPDATE producto SET nombre = '$nombre', descripcion = '$descripcion', foto = '$foto', precio = '$precio', stock = '$stock', tipo = '$tipo' WHERE nombre = '$fnum'";
+
+    if ($con->query($sql) === TRUE) {
+        header("Location: " . $_SERVER['REQUEST_URI']); // to same page
+        exit();
+    } else {
+        echo "Error: " . $sql . "<br>" . $con->error;
+    }
+}
+
 echo "<button onClick='window.location.reload();'>Recargar</button>";
 echo "<button onClick='toggleTable()'>Tabla producto</button>"; 
-// Display all current elements in Producto
+// display all from producto
 $result = mysqli_query($con,"SELECT * FROM producto;");
 echo "<div id='productTable' style='display: none;'><table border='1'>"; 
 echo "<tr>
@@ -85,14 +114,11 @@ while($row = mysqli_fetch_array($result)) {
     echo "</tr>";
 }
 
-echo "</table></div>"; // Close div
+echo "</table></div>"; 
 
 mysqli_close($con);
 ?>
 
-<?php if ($changes_made): ?>
-    <h3>Cambios efectuados</h3>
-<?php endif; ?>
 
 <h1>Pagina de Admin</h1>
 
@@ -114,6 +140,36 @@ mysqli_close($con);
   <option value="GUND Regular Plush">GUND Regular Plush</option>
 </select><br>
 <input type="submit" value="Submit">
+</form>
+
+<h2>Modificar Datos Existentes De Producto</h2>
+<form method="post" action="<?php echo $_SERVER["PHP_SELF"];?>">
+<label for="fnum">Nombre del Producto a Modificar:</label><br>
+<input type="text" id="fnum" name="fnum"><br>
+<label for="nombre">Nuevo Nombre:</label><br>
+<input type="text" id="nombre" name="nombre"><br>
+<label for="descripcion">Nueva Descripcion:</label><br>
+<input type="text" id="descripcion" name="descripcion" maxlength="100"><br>
+<label for="foto">Nueva Foto:</label><br>
+<input type="text" id="foto" name="foto"><br>
+<label for="precio">Nuevo Precio:</label><br>
+<input type="text" id="precio" name="precio"><br>
+<label for="stock">Nuevo Stock:</label><br>
+<input type="text" id="stock" name="stock"><br>
+<label for="tipo">Nuevo Tipo:</label><br>
+<select id="tipo" name="tipo">
+  <option value="GUND Keychain Plush">GUND Keychain Plush</option>
+  <option value="GUND Regular Plush">GUND Regular Plush</option>
+</select><br>
+<input type="hidden" name="update_product" value="1">
+<input type="submit" value="Update Product">
+</form>
+
+<h2>Eliminar Datos Existentes De Producto</h2>
+<form method="post" action="<?php echo $_SERVER["PHP_SELF"];?>">
+<label for="fnum_del">Nombre del Producto a Eliminar:</label><br>
+<input type="text" id="fnum_del" name="fnum_del"><br>
+<input type="submit" name="delete_product" value="Delete Product">
 </form>
 
 <h2>Actualizar Stock de Producto</h2>

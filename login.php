@@ -31,7 +31,7 @@
         <div class="row align-items-center">
             <div class="col-lg-12">
                 <nav class="navbar navbar-expand-lg navbar-light">
-                    <a class="navbar-brand" href="index.html"> <img src="uglydolls/indexlogo.png" alt="logo"> </a>
+                    <a class="navbar-brand" href="index.php"> <img src="uglydolls/indexlogo.png" alt="logo"> </a>
                     <button class="navbar-toggler" type="button" data-toggle="collapse"
                         data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
                         aria-expanded="false" aria-label="Toggle navigation">
@@ -41,16 +41,16 @@
                     <div class="collapse navbar-collapse main-menu-item" id="navbarSupportedContent">
                         <ul class="navbar-nav">
                             <li class="nav-item">
-                                <a class="nav-link" href="index.html">Home</a>
+                                <a class="nav-link" href="index.php">Home</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="category.html">Buy Uglydoll</a>
+                                <a class="nav-link" href="category.php">Buy Uglydoll</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="login.html">Login</a>
+                                <a class="nav-link" href="login.php">Login</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="about.html">About</a>
+                                <a class="nav-link" href="about.php">About</a>
                             </li>
                         </ul>
                     </div>
@@ -74,19 +74,19 @@
 
     <!-- breadcrumb start-->
     <section class="breadcrumb breadcrumb_bg">
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-lg-8">
-                    <div class="breadcrumb_iner">
-                        <div class="breadcrumb_iner_item">
-                            <h2>Login</h2>
-                            <p>Make an account <span>-</span> Sign In</p>
-                        </div>
-                    </div>
-                </div>
+    <div class="container">
+      <div class="row justify-content-center">
+        <div>
+          <div class="breadcrumb_iner">
+            <div class="breadcrumb_iner_item">
+              <h2>Login</h2>
+              <p>Make an account - Sign in</p>
             </div>
+          </div>
         </div>
-    </section>
+      </div>
+    </div>
+</section>
     <!-- breadcrumb start-->
 
     <!--================login_part Area =================-->

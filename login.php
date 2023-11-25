@@ -26,50 +26,72 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 
-<header class="main_menu home_menu">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-lg-12">
-                <nav class="navbar navbar-expand-lg navbar-light">
-                    <a class="navbar-brand" href="index.php"> <img src="uglydolls/indexlogo.png" alt="logo"> </a>
-                    <button class="navbar-toggler" type="button" data-toggle="collapse"
-                        data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                        <span class="menu_icon"><i class="fas fa-bars"></i></span>
-                    </button>
+<body>
+    <?php
+    session_start();
 
-                    <div class="collapse navbar-collapse main-menu-item" id="navbarSupportedContent">
-                        <ul class="navbar-nav">
-                            <li class="nav-item">
-                                <a class="nav-link" href="index.php">Home</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="category.php">Buy Uglydoll</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="login.php">Login</a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" href="about.php">About</a>
-                            </li>
-                        </ul>
-                    </div>
-                    <div class="hearer_icon d-flex">
-                        <a href=""><i class="ti-user"></i></a> <!-- This is your new account icon -->
-                        <div class="dropdown cart">
-                            <a class="dropdown-toggle" href="#" id="navbarDropdown3" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="fas fa-cart-plus"></i>
-                            </a>
+    // Connect to your database
+    $con=mysqli_connect("localhost","root","","uglydolls");
+
+    // Check connection
+    if (mysqli_connect_errno()) {
+        echo "Failed to connect to MySQL: " . mysqli_connect_error();
+    }
+
+    // Check if the user is logged in
+    $loggedIn = isset($_SESSION['user_id']);
+    ?>
+    <!--::header part start::-->
+    <header class="main_menu home_menu">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-12">
+                    <nav class="navbar navbar-expand-lg navbar-light">
+                        <a class="navbar-brand" href="index.php"> <img src="uglydolls/indexlogo.png" alt="logo"> </a>
+                        <button class="navbar-toggler" type="button" data-toggle="collapse"
+                            data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                            aria-expanded="false" aria-label="Toggle navigation">
+                            <span class="menu_icon"><i class="fas fa-bars"></i></span>
+                        </button>
+
+                        <div class="collapse navbar-collapse main-menu-item" id="navbarSupportedContent">
+                            <ul class="navbar-nav">
+                                <li class="nav-item">
+                                    <a class="nav-link" href="index.php">Home</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="category.php">Buy Uglydoll</a>
+                                </li>
+                                <?php if ($loggedIn) : ?>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="profile.php">Profile</a>
+                                </li>
+                                <?php else : ?>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="login.php">Login</a>
+                                </li>
+                                <?php endif; ?>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="about.php">About</a>
+                                </li>
+                            </ul>
                         </div>
-                    </div>                        
-                    </div>
-                </nav>
+                        <div class="hearer_icon d-flex">
+                            <a href="<?php echo $loggedIn ? 'profile.php' : 'login.php'; ?>"><i class="ti-user"></i></a>
+                            <div class="dropdown cart">
+                                <a class="dropdown-toggle" href="#" id="navbarDropdown3" role="button"
+                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    <i class="fas fa-cart-plus"></i>
+                                </a>
+                            </div>
+                        </div>                        
+                        </div>
+                    </nav>
+                </div>
             </div>
         </div>
-    </div>
-</header>
-<!-- Header part end-->
+    </header>
+    <!-- Header part end-->
 
 
     <!-- breadcrumb start-->
@@ -80,7 +102,7 @@
           <div class="breadcrumb_iner">
             <div class="breadcrumb_iner_item">
               <h2>Login</h2>
-              <p>Make an account - Sign in</p>
+              <p>Sign in</p>
             </div>
           </div>
         </div>
@@ -89,51 +111,82 @@
 </section>
     <!-- breadcrumb start-->
 
-    <!--================login_part Area =================-->
-    <section class="login_part padding_top">
-        <div class="container">
-            <div class="row align-items-center">
-                <div class="col-lg-6 col-md-6">
-                    <div class="login_part_text text-center">
-                        <div class="login_part_text_iner">
-                            <h2>New to our Shop?</h2>
-                            <p>Make your account today 
-                                and join the Uglydoll family!</p>
-                            <a href="#" class="btn_3">Create an Account</a>
-                        </div>
+    <?php
+    session_start();
+// Connect to your database
+$con=mysqli_connect("localhost","root","","uglydolls");
+$message = '';
+
+if($_SERVER["REQUEST_METHOD"] == "POST") {
+    $correo = $_POST['name'];
+    $contrasenia = $_POST['password'];
+
+    // Check if the email and password match an account in the database
+    $query = "SELECT * FROM usuario WHERE correo = '$correo' AND contrasenia = '$contrasenia'";
+    $result = mysqli_query($con, $query);
+    if (mysqli_num_rows($result) > 0) {
+        // Successful login
+        $row = mysqli_fetch_assoc($result);
+        $_SESSION['user_id'] = $row['usernum']; // Set the user_id session variable
+        header('Location: profile.php');
+        exit;
+    } else {
+        // Unsuccessful login
+        $message = 'Email and password do not match any account';
+    }
+}
+if (isset($_SESSION['account_created'])) {
+    $message = $_SESSION['account_created'];
+    unset($_SESSION['account_created']);
+}
+?>
+
+<!--================login_part Area =================-->
+
+<section class="login_part padding_top">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 col-md-6">
+                <div class="login_part_text text-center">
+                    <div class="login_part_text_iner">
+                        <h2>New to our Shop?</h2>
+                        <p>Make your account today 
+                            and join the Uglydoll family!</p>
+                        <a href="create.php" class="btn_3">Create an Account</a>
                     </div>
                 </div>
-                <div class="col-lg-6 col-md-6">
-                    <div class="login_part_form">
-                        <div class="login_part_form_iner">
-                            <h3>Welcome Back ! <br>
-                                Please Sign in now</h3>
-                            <form class="row contact_form" action="#" method="post" novalidate="novalidate">
-                                <div class="col-md-12 form-group p_star">
-                                    <input type="text" class="form-control" id="name" name="name" value=""
-                                        placeholder="Username">
+            </div>
+            <div class="col-lg-6 col-md-6">
+                <div class="login_part_form">
+                    <div class="login_part_form_iner">
+                        <h3>Welcome Back ! <br>
+                            Please Sign in now</h3>
+                        <form class="row contact_form" action="login.php" method="post" novalidate="novalidate">
+                            <div class="col-md-12 form-group p_star">
+                                <input type="text" class="form-control" id="name" name="name" value=""
+                                    placeholder="Email">
+                            </div>
+                            <div class="col-md-12 form-group p_star">
+                                <input type="password" class="form-control" id="password" name="password" value=""
+                                    placeholder="Password">
+                            </div>
+                            <div class="col-md-12 form-group">
+                                <div class="creat_account d-flex align-items-center">
                                 </div>
-                                <div class="col-md-12 form-group p_star">
-                                    <input type="password" class="form-control" id="password" name="password" value=""
-                                        placeholder="Password">
-                                </div>
-                                <div class="col-md-12 form-group">
-                                    <div class="creat_account d-flex align-items-center">
-                                        <input type="checkbox" id="f-option" name="selector">
-                                        <label for="f-option">Remember me</label>
-                                    </div>
-                                    <button type="submit" value="submit" class="btn_3">
-                                        log in
-                                    </button>
-                                    <a class="lost_pass" href="#">forget password?</a>
-                                </div>
-                            </form>
-                        </div>
+                                <button type="submit" value="submit" class="btn_3">
+                                    log in
+                                </button>
+                                <?php if (!empty($message)) : ?>
+                                <div class="genric-btn disable radius"><?php echo $message; ?></div>
+                                <?php endif; ?>
+                            </div>
+                        </form>
                     </div>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
+</section>
     <!--================login_part end =================-->
 
     <!--::footer_part start::-->

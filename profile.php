@@ -92,26 +92,10 @@
         </div>
     </header>
     <!-- Header part end-->
-
-  <!-- breadcrumb start-->
-  <section class="breadcrumb breadcrumb_bg">
-    <div class="container">
-      <div class="row justify-content-center">
-        <div>
-          <div class="breadcrumb_iner">
-            <div class="breadcrumb_iner_item">
-              <h2>Shop</h2>
-              <p>Product view</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-</section>
-  <!-- breadcrumb start-->
   <!--================End Home Banner Area =================-->
 
   <?php
+
 // Connect to your database
 $con=mysqli_connect("localhost","root","","uglydolls");
 
@@ -120,121 +104,118 @@ if (mysqli_connect_errno()) {
     echo "Failed to connect to MySQL: " . mysqli_connect_error();
 }
 
-// Get the product ID from the URL
-$id = $_GET['id'];
+// Get the user ID from the session
+$id = $_SESSION['user_id'];
 
-// Fetch the product details from the database
-$result = $con->query("SELECT * FROM producto WHERE productonum = $id");
+// Check if the forms were submitted and update the database accordingly
+if($_SERVER["REQUEST_METHOD"] == "POST") {
+    if (isset($_POST['new_name'])) {
+        $new_name = $_POST['new_name'];
+        // Update the name in the database
+        $query = "UPDATE usuario SET nombre = '$new_name' WHERE usernum = $id";
+        $result = mysqli_query($con, $query);
+        if ($result) {
+            // Successful update
+            $message = 'Name updated successfully';
+        } else {
+            // Unsuccessful update
+            $message = 'Failed to update name';
+        }
+    } elseif (isset($_POST['new_email'])) {
+        $new_email = $_POST['new_email'];
+        // Update the email in the database
+        $query = "UPDATE usuario SET correo = '$new_email' WHERE usernum = $id";
+        $result = mysqli_query($con, $query);
+        if ($result) {
+            // Successful update
+            $message = 'Email updated successfully';
+        } else {
+            // Unsuccessful update
+            $message = 'Failed to update email';
+        }
+    } elseif (isset($_POST['new_password'])) {
+        $new_password = $_POST['new_password'];
+        // Update the password in the database
+        $query = "UPDATE usuario SET contrasenia = '$new_password' WHERE usernum = $id";
+        $result = mysqli_query($con, $query);
+        if ($result) {
+            // Successful update
+            $message = 'Password updated successfully';
+        } else {
+            // Unsuccessful update
+            $message = 'Failed to update password';
+        }
+    } elseif (isset($_POST['sign_out'])) {
+        // Sign out
+        session_destroy();
+        header('Location: index.php');
+        exit;
+    } elseif (isset($_POST['delete_account'])) {
+        // Delete the account
+        $query = "DELETE FROM usuario WHERE usernum = $id";
+        $result = mysqli_query($con, $query);
+        session_destroy();
+        header('Location: index.php');
+        exit;
+    }
+}
+
+// Fetch the user details from the database
+$result = $con->query("SELECT * FROM usuario WHERE usernum = $id");
 
 if ($result->num_rows > 0) {
-    // Fetch the product details
+    // Fetch the user details
     $row = $result->fetch_assoc();
 ?>
 
-<!--================Single Product Area =================-->
-<div class="product_image_area section_padding">
+<!--================User Profile Area =================-->
+<div class="user_profile_area section_padding">
     <div class="container">
-        <div class="row s_product_inner justify-content-between">
+        <div class="row s_user_profile_inner justify-content-between">
             <div class="col-lg-7 col-xl-7">
-                <div class="product_slider_img">
-                        <div data-thumb="https://lab.anahuac.mx/~a00444232/pngs/<?php echo $row['foto']; ?>">
-                            <img src="https://lab.anahuac.mx/~a00444232/pngs/<?php echo $row['foto'] ?>" />
-                        </div>
-                    </div>
-                </div>
-            <div class="col-lg-5 col-xl-4">
-                <div class="s_product_text">
-                    <h3><?php echo $row['nombre']; ?></h3>
-                    <h2>$<?php echo $row['precio']; ?></h2>
-                    <ul class="list">
-                        <li>
-                            <a class="active" href="#">
-                                <span>Type:</span> <?php echo $row['tipo']; ?></a>
-                        </li>
-                        <li>
-                             <span>In stock:</span> <?php echo $row['stock']; ?>
-                        </li>
-                    </ul>
-                    <p>
-                        <?php echo $row['descripcion']; ?>
-                    </p>
-                    <div class="card_area d-flex justify-content-between align-items-center">
-                        <div class="product_count">
-                            <span class="inumber-decrement"> <i class="ti-minus"></i></span>
-                            <input class="input-number" type="text" value="1" min="1" max="10">
-                            <span class="number-increment"> <i class="ti-plus"></i></span>
-                        </div>
-                        <a href="#" class="btn_3">add to cart</a>
-                    </div>
+                <div class="user_profile_info">
+                    <h3><span>Name: </span><?php echo $row['nombre']; ?> <a href="#" class="genric-btn default-border" onclick="document.getElementById('change_name_form').style.display='block'">Change</a></h3>
+                    <form id="change_name_form" style="display: none;" action="profile.php" method="post">
+                        <label for="new_name">New Name:</label>
+                        <input type="text" id="new_name" name="new_name">
+                        <input type="submit" value="Submit">
+                    </form>
+
+                    <h2><span>Email: </span><?php echo $row['correo']; ?> <a href="#" class="genric-btn default-border" onclick="document.getElementById('change_email_form').style.display='block'">Change</a></h2>
+                    <form id="change_email_form" style="display: none;" action="profile.php" method="post">
+                        <label for="new_email">New Email:</label>
+                        <input type="text" id="new_email" name="new_email">
+                        <input type="submit" value="Submit">
+                    </form>
+
+                    <p><span>Password: </span><?php echo $row['contrasenia']; ?> <a href="#" class="genric-btn default-border" onclick="document.getElementById('change_password_form').style.display='block'">Change</a></p>
+                    <form id="change_password_form" style="display: none;" action="profile.php" method="post">
+                        <label for="new_password">New Password:</label>
+                        <input type="password" id="new_password" name="new_password">
+                        <input type="submit" value="Submit">
+                    </form>
+                    <br>
+                    <form action="profile.php" method="post">
+                    <input type="submit" name="sign_out" value="Sign out" class="genric-btn primary-border e-large">
+                    </form>
+                    <br>
+                    <form action="profile.php" method="post" onsubmit="return confirm('Are you sure you want to delete your account? This action cannot be undone.');">
+                        <input type="submit" name="delete_account" value="Delete account" class="genric-btn primary e-large">
+                    </form>
                 </div>
             </div>
         </div>
     </div>
 </div>
-<!--================End Single Product Area =================-->
+<!--================End User Profile Area =================-->
 
 <?php
 } else {
-    echo "Product not found";
+    echo "User not found";
 }
 
 $con->close();
 ?>
-
-
-    <!-- product_list part start-->
-    <section class="product_list best_seller">
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-lg-12">
-                    <div class="section_tittle text-center">
-                        <h2>Best Sellers <span>shop</span></h2>
-                    </div>
-                </div>
-            </div>
-            <div class="row align-items-center justify-content-between">
-                <div class="col-lg-12">
-                    <div class="best_product_slider owl-carousel">
-                        <div class="single_product_item">
-                            <img src="uglydolls/pngs/moxydorothy.png" alt="">
-                            <div class="single_product_text">
-                                <h4>Moxy - Dorothy</h4>
-                                <h3>$11.00</h3>
-                            </div>
-                        </div>
-                        <div class="single_product_item">
-                            <img src="uglydolls/pngs/wippy.png" alt="">
-                            <div class="single_product_text">
-                                <h4>Wippy</h4>
-                                <h3>$9.00</h3>
-                            </div>
-                        </div>
-                        <div class="single_product_item">
-                            <img src="uglydolls/pngs/bigtoe.png" alt="">
-                            <div class="single_product_text">
-                                <h4>Big Toe</h4>
-                                <h3>$15.00</h3>
-                            </div>
-                        </div>
-                        <div class="single_product_item">
-                            <img src="uglydolls/pngs/trunkogrape.png" alt="">
-                            <div class="single_product_text">
-                                <h4>Trunko - Grape</h4>
-                                <h3>$11.00</h3>
-                            </div>
-                        </div>
-                        <div class="single_product_item">
-                            <img src="uglydolls/pngs/babohair.png" alt="">
-                            <div class="single_product_text">
-                                <h4>Babo - Hair</h4>
-                                <h3>$11.00</h3>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
 
   <!--::footer_part start::-->
   <footer class="footer_part">

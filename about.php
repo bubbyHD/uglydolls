@@ -2,32 +2,45 @@
 <html lang="zxx">
 
 <head>
-	<!-- Required meta tags -->
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-	<title>uglyshop</title>
-	<link rel="icon" href="uglydolls/icon.png">
-	<!-- Bootstrap CSS -->
-	<link rel="stylesheet" href="css/bootstrap.min.css">
-	<!-- animate CSS -->
-	<link rel="stylesheet" href="css/animate.css">
-	<!-- owl carousel CSS -->
-	<link rel="stylesheet" href="css/owl.carousel.min.css">
-	<!-- font awesome CSS -->
-	<link rel="stylesheet" href="css/all.css">
-	<!-- flaticon CSS -->
-	<link rel="stylesheet" href="css/flaticon.css">
-	<link rel="stylesheet" href="css/themify-icons.css">
-	<link rel="stylesheet" href="css/nice-select.css">
-	<!-- font awesome CSS -->
-	<link rel="stylesheet" href="css/magnific-popup.css">
-	<!-- swiper CSS -->
-	<link rel="stylesheet" href="css/slick.css">
-	<!-- style CSS -->
-	<link rel="stylesheet" href="css/style.css">
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>uglyshop</title>
+    <link rel="icon" href="uglydolls/icon.png">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <!-- animate CSS -->
+    <link rel="stylesheet" href="css/animate.css">
+    <!-- owl carousel CSS -->
+    <link rel="stylesheet" href="css/owl.carousel.min.css">
+    <!-- font awesome CSS -->
+    <link rel="stylesheet" href="css/all.css">
+    <!-- flaticon CSS -->
+    <link rel="stylesheet" href="css/flaticon.css">
+    <link rel="stylesheet" href="css/themify-icons.css">
+    <!-- font awesome CSS -->
+    <link rel="stylesheet" href="css/magnific-popup.css">
+    <!-- swiper CSS -->
+    <link rel="stylesheet" href="css/slick.css">
+    <!-- style CSS -->
+    <link rel="stylesheet" href="css/style.css">
 </head>
 
 <body>
+    <?php
+    session_start();
+
+    // Connect to your database
+    $con=mysqli_connect("localhost","root","","uglydolls");
+
+    // Check connection
+    if (mysqli_connect_errno()) {
+        echo "Failed to connect to MySQL: " . mysqli_connect_error();
+    }
+
+    // Check if the user is logged in
+    $loggedIn = isset($_SESSION['user_id']);
+    ?>
     <!--::header part start::-->
     <header class="main_menu home_menu">
         <div class="container">
@@ -49,16 +62,22 @@
                                 <li class="nav-item">
                                     <a class="nav-link" href="category.php">Buy Uglydoll</a>
                                 </li>
+                                <?php if ($loggedIn) : ?>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="profile.php">Profile</a>
+                                </li>
+                                <?php else : ?>
                                 <li class="nav-item">
                                     <a class="nav-link" href="login.php">Login</a>
                                 </li>
+                                <?php endif; ?>
                                 <li class="nav-item">
                                     <a class="nav-link" href="about.php">About</a>
                                 </li>
                             </ul>
                         </div>
                         <div class="hearer_icon d-flex">
-                            <a href=""><i class="ti-user"></i></a> <!-- This is your new account icon -->
+                            <a href="<?php echo $loggedIn ? 'profile.php' : 'login.php'; ?>"><i class="ti-user"></i></a>
                             <div class="dropdown cart">
                                 <a class="dropdown-toggle" href="#" id="navbarDropdown3" role="button"
                                     data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">

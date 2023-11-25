@@ -27,6 +27,20 @@
 </head>
 
 <body>
+    <?php
+    session_start();
+
+    // Connect to your database
+    $con=mysqli_connect("localhost","root","","uglydolls");
+
+    // Check connection
+    if (mysqli_connect_errno()) {
+        echo "Failed to connect to MySQL: " . mysqli_connect_error();
+    }
+
+    // Check if the user is logged in
+    $loggedIn = isset($_SESSION['user_id']);
+    ?>
     <!--::header part start::-->
     <header class="main_menu home_menu">
         <div class="container">
@@ -48,16 +62,22 @@
                                 <li class="nav-item">
                                     <a class="nav-link" href="category.php">Buy Uglydoll</a>
                                 </li>
+                                <?php if ($loggedIn) : ?>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="profile.php">Profile</a>
+                                </li>
+                                <?php else : ?>
                                 <li class="nav-item">
                                     <a class="nav-link" href="login.php">Login</a>
                                 </li>
+                                <?php endif; ?>
                                 <li class="nav-item">
                                     <a class="nav-link" href="about.php">About</a>
                                 </li>
                             </ul>
                         </div>
                         <div class="hearer_icon d-flex">
-                            <a href=""><i class="ti-user"></i></a>
+                            <a href="<?php echo $loggedIn ? 'profile.php' : 'login.php'; ?>"><i class="ti-user"></i></a>
                             <div class="dropdown cart">
                                 <a class="dropdown-toggle" href="#" id="navbarDropdown3" role="button"
                                     data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -72,7 +92,7 @@
         </div>
     </header>
     <!-- Header part end-->
-
+    
     <!-- banner part start-->
     <section class="banner_part">
         <div class="container">

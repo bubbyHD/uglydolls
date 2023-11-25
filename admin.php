@@ -37,7 +37,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         } else {
             echo "Error: " . $sql . "<br>" . $con->error;
         }
-    } else {
+    } elseif(isset($_POST["insert_product"])) {
         $nombre = $_POST["nombre"];
         $descripcion = $_POST["descripcion"];
         $foto = $_POST["foto"];
@@ -54,36 +54,40 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         } else {
             echo "Error: " . $sql . "<br>" . $con->error;
         }
-    }
-}
+    } elseif(isset($_POST["delete_product"])) {
+        $nombre = $_POST["fnum_del"];
+        $sql = "DELETE FROM producto WHERE nombre = '$nombre'";
+        if ($con->query($sql) === TRUE) {
+            header("Location: " . $_SERVER['REQUEST_URI']); // to same page
+            exit();
+        } else {
+            echo "Error: " . $sql . "<br>" . $con->error;
+        }
+    } elseif(isset($_POST["update_product"])) {
+        $fnum = $_POST["fnum"];
+        $nombre = $_POST["nombre"];
+        $descripcion = $_POST["descripcion"];
+        $foto = $_POST["foto"];
+        $precio = $_POST["precio"];
+        $stock = $_POST["stock"];
+        $tipo = $_POST["tipo"];
 
-if(isset($_POST["delete_product"])) {
-    $nombre = $_POST["fnum_del"];
-    $sql = "DELETE FROM producto WHERE nombre = '$nombre'";
-    if ($con->query($sql) === TRUE) {
-        header("Location: " . $_SERVER['REQUEST_URI']); // to same page
-        exit();
-    } else {
-        echo "Error: " . $sql . "<br>" . $con->error;
-    }
-}
+        $sql = "UPDATE producto SET ";
+        if (!empty($nombre)) $sql .= "nombre = '$nombre', ";
+        if (!empty($descripcion)) $sql .= "descripcion = '$descripcion', ";
+        if (!empty($foto)) $sql .= "foto = '$foto', ";
+        if (!empty($precio)) $sql .= "precio = '$precio', ";
+        if (!empty($stock)) $sql .= "stock = '$stock', ";
+        if (!empty($tipo)) $sql .= "tipo = '$tipo', ";
+        $sql = rtrim($sql, ', '); // remove trailing comma
+        $sql .= " WHERE nombre = '$fnum'";
 
-if(isset($_POST["update_product"])) {
-    $fnum = $_POST["fnum"];
-    $nombre = $_POST["nombre"];
-    $descripcion = $_POST["descripcion"];
-    $foto = $_POST["foto"];
-    $precio = $_POST["precio"];
-    $stock = $_POST["stock"];
-    $tipo = $_POST["tipo"];
-
-    $sql = "UPDATE producto SET nombre = '$nombre', descripcion = '$descripcion', foto = '$foto', precio = '$precio', stock = '$stock', tipo = '$tipo' WHERE nombre = '$fnum'";
-
-    if ($con->query($sql) === TRUE) {
-        header("Location: " . $_SERVER['REQUEST_URI']); // to same page
-        exit();
-    } else {
-        echo "Error: " . $sql . "<br>" . $con->error;
+        if ($con->query($sql) === TRUE) {
+            header("Location: " . $_SERVER['REQUEST_URI']); // to same page
+            exit();
+        } else {
+            echo "Error: " . $sql . "<br>" . $con->error;
+        }
     }
 }
 
@@ -119,7 +123,6 @@ echo "</table></div>";
 mysqli_close($con);
 ?>
 
-
 <h1>Pagina de Admin</h1>
 
 <h2>Insertar Nuevos Datos A Producto</h2>
@@ -139,6 +142,7 @@ mysqli_close($con);
   <option value="GUND Keychain Plush">GUND Keychain Plush</option>
   <option value="GUND Regular Plush">GUND Regular Plush</option>
 </select><br>
+<input type="hidden" name="insert_product" value="1">
 <input type="submit" value="Submit">
 </form>
 
@@ -171,14 +175,3 @@ mysqli_close($con);
 <input type="text" id="fnum_del" name="fnum_del"><br>
 <input type="submit" name="delete_product" value="Delete Product">
 </form>
-
-<h2>Actualizar Stock de Producto</h2>
-<form method="post" action="<?php echo $_SERVER["PHP_SELF"];?>">
-<label for="fnum">Nombre de Producto:</label><br>
-<input type="text" id="fnum" name="fnum"><br>
-<label for="stock_change">Cambiar Stock (acepta numeros negativos):</label><br>
-<input type="number" id="stock_change" name="stock_change"><br>
-<input type="submit" name="update_stock" value="Update Stock">
-</form>
-</body>
-</html>

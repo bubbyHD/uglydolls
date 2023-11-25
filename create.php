@@ -93,216 +93,69 @@
     </header>
     <!-- Header part end-->
 
-    <!--================Home Banner Area =================-->
-    <!-- breadcrumb start-->
-    <section class="breadcrumb breadcrumb_bg">
-    <div class="container">
-      <div class="row justify-content-center">
-        <div>
-          <div class="breadcrumb_iner">
-            <div class="breadcrumb_iner_item">
-              <h2>Buy Uglydoll!</h2>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-</section>
-    <!-- breadcrumb start-->
-                <?php
+    <?php
 // Connect to your database
 $con=mysqli_connect("localhost","root","","uglydolls");
 
-// Check connection
-if (mysqli_connect_errno()) {
-    echo "Failed to connect to MySQL: " . mysqli_connect_error();
+if($_SERVER["REQUEST_METHOD"] == "POST") {
+    $nombre = $_POST['name'];
+    $correo = $_POST['email'];
+    $contrasenia = $_POST['password'];
+
+    // Check for duplicate emails
+    $check_query = "SELECT * FROM usuario WHERE correo = '$correo'";
+    $result = mysqli_query($con, $check_query);
+    if (mysqli_num_rows($result) > 0) {
+        echo "<script>alert('Email already registered under another account!');</script>";
+    } else {
+        $query = "INSERT INTO usuario (nombre, correo, contrasenia) VALUES ('$nombre', '$correo', '$contrasenia')";
+        if (mysqli_query($con, $query)) {
+            session_start();
+            $_SESSION['account_created'] = 'Account successfully created';
+            header('Location: login.php');
+            exit;
+        }
+    }
 }
-
-// Get the selected filter from the URL
-$filter = isset($_GET['filter']) ? $_GET['filter'] : '';
-
-// page number from the query string
-$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
-
-$productsPerPage = 9;
-
-$offset = ($page - 1) * $productsPerPage;
-
-// Fetch the count for each type from the database
-$typeCountsResult = $con->query("SELECT tipo, COUNT(*) as count FROM producto GROUP BY tipo");
-$typeCounts = [];
-while ($row = $typeCountsResult->fetch_assoc()) {
-    $typeCounts[$row['tipo']] = $row['count'];
-}
-
-// Modify the SQL query based on the selected filter
-if ($filter) {
-    $result = $con->query("SELECT productonum, foto, nombre, precio FROM producto WHERE tipo = '$filter' LIMIT $productsPerPage OFFSET $offset");
-    // total number of products for the selected filter
-    $totalProductsResult = $con->query("SELECT COUNT(*) as total FROM producto WHERE tipo = '$filter'");
-} else {
-    $result = $con->query("SELECT productonum, foto, nombre, precio FROM producto LIMIT $productsPerPage OFFSET $offset");
-    // total number of products
-    $totalProductsResult = $con->query("SELECT COUNT(*) as total FROM producto");
-}
-
-$totalProducts = $totalProductsResult->fetch_assoc()['total'];
 ?>
 
-
-    <!--================Category Product Area =================-->
-    <section class="cat_product_area section_padding">
+<!--================login_part Area =================-->
+<section class="login_part padding_top">
     <div class="container">
-        <div class="row">
-            <div class="col-lg-3">
-                <div class="left_sidebar_area">
-                <aside class="left_widgets p_filter_widgets">
-    <div class="l_w_title">
-        <h3>Filter Categories</h3>
-    </div>
-    <div class="widgets_inner">
-        <ul class="list">
-            <li>
-                <a href="category.php">All</a>
-                <span>(<?php echo array_sum($typeCounts); ?>)</span>
-            </li>
-            <?php foreach ($typeCounts as $type => $count): ?>
-            <li>
-                <a href="category.php?filter=<?php echo urlencode($type); ?>"><?php echo $type; ?></a>
-                <span>(<?php echo $count; ?>)</span>
-            </li>
-            <?php endforeach; ?>
-        </ul>
-    </div>
-</aside>
-                </div>
-            </div>
-            <div class="col-lg-9">
-
-
-<?php
-echo '<div class="col-lg-12">
-    <div class="product_top_bar d-flex justify-content-between align-items-center">
-        <div class="single_product_menu">
-            <p><span>' . $totalProducts . ' </span> Products Found</p>
-        </div>
-    </div>
-</div>';
-
-echo '<div class="row align-items-center">';
-if ($result->num_rows > 0) {
-    // rows
-    while($row = $result->fetch_assoc()) {
-        echo '<div class="col-lg-4 col-sm-6">
-            <div class="single_product_item">
-                <a href="single-product.php?id=' . $row["productonum"] . '">
-                    <img src="https://lab.anahuac.mx/~a00444232/pngs/' . $row["foto"] . '" alt="">
-                </a>
-                <div class="single_product_text">
-                    <h4>' . $row["nombre"] . '</h4>
-                    <h3>$' . $row["precio"] . '</h3>
-                    <a href="#" class="add_cart">+ add to cart</a>
-                </div>
-            </div>
-        </div>';
-    }    
-} else {
-    echo "No products found";
-}
-echo '</div>';
-
-// total number of pages
-$totalPages = ceil($totalProducts / $productsPerPage);
-
-// pagination links
-echo '<div class="col-lg-12">
-    <div class="pageination">
-        <nav aria-label="Page navigation example">
-            <ul class="pagination justify-content-center">
-                <li class="page-item">
-                    <a class="page-link" href="category.php?page=' . max(1, $page-1) . '&filter=' . urlencode($filter) . '" aria-label="Previous">
-                        <i class="ti-angle-double-left"></i>
-                    </a>
-                </li>';
-
-for ($i = 1; $i <= $totalPages; $i++) {
-    echo '<li class="page-item"><a class="page-link" href="category.php?page=' . $i . '&filter=' . urlencode($filter) . '">' . $i . '</a></li>';
-}
-
-echo '<li class="page-item">
-            <a class="page-link" href="category.php?page=' . min($totalPages, $page+1) . '&filter=' . urlencode($filter) . '" aria-label="Next">
-                <i class="ti-angle-double-right"></i>
-            </a>
-        </li>
-    </ul>
-</nav>
-</div>
-</div>';
-
-$con->close();
-?>
-
+        <div class="row align-items-center">
+            <div class="col-lg-6 col-md-6">
+                <div class="login_part_form">
+                    <div class="login_part_form_iner">
+                        <h3>Welcome Back ! <br>
+                            Make a new account now!</h3>
+                            <form class="row contact_form" action="" method="post" novalidate="novalidate">
+                            <div class="col-md-12 form-group p_star">
+                                <input type="text" class="form-control" id="name" name="name" value=""
+                                    placeholder="Name">
+                            </div>
+                            <div class="col-md-12 form-group p_star">
+                                <input type="text" class="form-control" id="email" name="email" value=""
+                                    placeholder="Email">
+                            </div>
+                            <div class="col-md-12 form-group p_star">
+                                <input type="password" class="form-control" id="password" name="password" value=""
+                                    placeholder="Password">
+                            </div>
+                            <div class="col-md-12 form-group">
+                                <div class="creat_account d-flex align-items-center">
+                                </div>
+                                <button type="submit" value="submit" class="btn_3">
+                                    create
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </section>
-    <!--================End Category Product Area =================-->
-
-    <!-- product_list part start-->
-    <section class="product_list best_seller">
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-lg-12">
-                    <div class="section_tittle text-center">
-                        <h2>Best Sellers <span>shop</span></h2>
-                    </div>
-                </div>
-            </div>
-            <div class="row align-items-center justify-content-between">
-                <div class="col-lg-12">
-                    <div class="best_product_slider owl-carousel">
-                        <div class="single_product_item">
-                            <img src="uglydolls/pngs/moxydorothy.png" alt="">
-                            <div class="single_product_text">
-                                <h4>Moxy - Dorothy</h4>
-                                <h3>$11.00</h3>
-                            </div>
-                        </div>
-                        <div class="single_product_item">
-                            <img src="uglydolls/pngs/wippy.png" alt="">
-                            <div class="single_product_text">
-                                <h4>Wippy</h4>
-                                <h3>$9.00</h3>
-                            </div>
-                        </div>
-                        <div class="single_product_item">
-                            <img src="uglydolls/pngs/bigtoe.png" alt="">
-                            <div class="single_product_text">
-                                <h4>Big Toe</h4>
-                                <h3>$15.00</h3>
-                            </div>
-                        </div>
-                        <div class="single_product_item">
-                            <img src="uglydolls/pngs/trunkogrape.png" alt="">
-                            <div class="single_product_text">
-                                <h4>Trunko - Grape</h4>
-                                <h3>$11.00</h3>
-                            </div>
-                        </div>
-                        <div class="single_product_item">
-                            <img src="uglydolls/pngs/babohair.png" alt="">
-                            <div class="single_product_text">
-                                <h4>Babo - Hair</h4>
-                                <h3>$11.00</h3>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-    <!-- product_list part end-->
+<!--================login_part end =================-->
 
     <!--::footer_part start::-->
     <footer class="footer_part">
@@ -357,6 +210,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
     <!--::footer_part end::-->
 
     <!-- jquery plugins here-->
+    <!-- jquery -->
     <script src="js/jquery-1.12.1.min.js"></script>
     <!-- popper js -->
     <script src="js/popper.min.js"></script>

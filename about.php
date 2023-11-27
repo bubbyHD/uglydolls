@@ -27,7 +27,7 @@
 </head>
 
 <body>
-    <?php
+<?php
     session_start();
 
     // Connect to your database
@@ -40,7 +40,17 @@
 
     // Check if the user is logged in
     $loggedIn = isset($_SESSION['user_id']);
-    ?>
+
+    // Fetch the number of items in the cart
+    if($loggedIn) {
+        $id = $_SESSION['user_id'];
+        $result = $con->query("SELECT SUM(quantity) as count FROM carrito WHERE usernum = $id");
+        $row = $result->fetch_assoc();
+        $cartCount = $row['count'];
+    } else {
+        $cartCount = 0; // or whatever you want the default to be
+    }
+?>
     <!--::header part start::-->
     <header class="main_menu home_menu">
         <div class="container">
@@ -78,13 +88,13 @@
                         </div>
                         <div class="hearer_icon d-flex">
                             <a href="<?php echo $loggedIn ? 'profile.php' : 'login.php'; ?>"><i class="ti-user"></i></a>
-                            <div class="dropdown cart">
-                                <a class="dropdown-toggle" href="#" id="navbarDropdown3" role="button"
-                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <a href="cart.php" id="navbarDropdown3" role="button">
                                     <i class="fas fa-cart-plus"></i>
+                                    <?php if ($loggedIn && $cartCount > 0): ?>
+                                    <span class="badge badge-light"><?php echo $cartCount; ?></span>
+                                    <?php endif; ?>
                                 </a>
-                            </div>
-                        </div>                        
+                        </div>               
                         </div>
                     </nav>
                 </div>

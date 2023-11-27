@@ -24,10 +24,11 @@
     <link rel="stylesheet" href="css/slick.css">
     <!-- style CSS -->
     <link rel="stylesheet" href="css/style.css">
+
 </head>
 
 <body>
-    <?php
+<?php
     session_start();
 
     // Connect to your database
@@ -40,7 +41,28 @@
 
     // Check if the user is logged in
     $loggedIn = isset($_SESSION['user_id']);
-    ?>
+
+    // Fetch the number of items in the cart
+    if($loggedIn) {
+        $id = $_SESSION['user_id'];
+        $result = $con->query("SELECT SUM(quantity) as count FROM carrito WHERE usernum = $id");
+        $row = $result->fetch_assoc();
+        $cartCount = $row['count'];
+    } else {
+        $cartCount = 0; // or whatever you want the default to be
+    }
+?>
+
+<script>
+function checkLoginStatus() {
+    <?php if(!$loggedIn): ?>
+        alert('You are not signed in. Please sign in to add items to your cart.');
+        return false;
+    <?php else: ?>
+        return true;
+    <?php endif; ?>
+}
+</script>
     <!--::header part start::-->
     <header class="main_menu home_menu">
         <div class="container">
@@ -78,13 +100,13 @@
                         </div>
                         <div class="hearer_icon d-flex">
                             <a href="<?php echo $loggedIn ? 'profile.php' : 'login.php'; ?>"><i class="ti-user"></i></a>
-                            <div class="dropdown cart">
-                                <a class="dropdown-toggle" href="#" id="navbarDropdown3" role="button"
-                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <a href="cart.php" id="navbarDropdown3" role="button">
                                     <i class="fas fa-cart-plus"></i>
+                                    <?php if ($loggedIn && $cartCount > 0): ?>
+                                    <span class="badge badge-light"><?php echo $cartCount; ?></span>
+                                    <?php endif; ?>
                                 </a>
-                            </div>
-                        </div>                        
+                        </div>                           
                         </div>
                     </nav>
                 </div>
@@ -180,7 +202,7 @@ $totalProducts = $totalProductsResult->fetch_assoc()['total'];
             <div class="col-lg-9">
 
 
-<?php
+            <?php
 echo '<div class="col-lg-12">
     <div class="product_top_bar d-flex justify-content-between align-items-center">
         <div class="single_product_menu">
@@ -201,7 +223,12 @@ if ($result->num_rows > 0) {
                 <div class="single_product_text">
                     <h4>' . $row["nombre"] . '</h4>
                     <h3>$' . $row["precio"] . '</h3>
-                    <a href="#" class="add_cart">+ add to cart</a>
+                    <form action="cart.php" method="post" onsubmit="return checkLoginStatus()" style="display: inline;">
+    <input type="hidden" name="add_product" value="1">
+    <input type="hidden" name="product_id" value="' . $row['productonum'] . '">
+    <input type="hidden" name="quantity" value="1">
+    <button type="submit" class="add_cart" style="background: none; border: none; padding: 0; color: #ffba00; cursor: pointer;">+ add to cart</button>
+</form>
                 </div>
             </div>
         </div>';
@@ -241,7 +268,6 @@ echo '<li class="page-item">
 
 $con->close();
 ?>
-
                 </div>
             </div>
         </div>

@@ -27,7 +27,7 @@
 </head>
 
 <body>
-    <?php
+<?php
     session_start();
 
     // Connect to your database
@@ -40,7 +40,17 @@
 
     // Check if the user is logged in
     $loggedIn = isset($_SESSION['user_id']);
-    ?>
+
+    // Fetch the number of items in the cart
+    if(isset($_SESSION['user_id'])) {
+        $id = $_SESSION['user_id'];
+        $result = $con->query("SELECT SUM(quantity) as count FROM carrito WHERE usernum = $id");
+        $row = $result->fetch_assoc();
+        $cartCount = $row['count'];
+    } else {
+        $cartCount = 0; // or whatever you want the default to be
+    }
+?>
     <!--::header part start::-->
     <header class="main_menu home_menu">
         <div class="container">
@@ -78,13 +88,13 @@
                         </div>
                         <div class="hearer_icon d-flex">
                             <a href="<?php echo $loggedIn ? 'profile.php' : 'login.php'; ?>"><i class="ti-user"></i></a>
-                            <div class="dropdown cart">
-                                <a class="dropdown-toggle" href="#" id="navbarDropdown3" role="button"
-                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <a href="cart.php" id="navbarDropdown3" role="button">
                                     <i class="fas fa-cart-plus"></i>
+                                    <?php if ($loggedIn && $cartCount > 0): ?>
+                                    <span class="badge badge-light"><?php echo $cartCount; ?></span>
+                                    <?php endif; ?>
                                 </a>
-                            </div>
-                        </div>                        
+                        </div>                    
                         </div>
                     </nav>
                 </div>
@@ -105,67 +115,31 @@ if (mysqli_connect_errno()) {
 }
 
 // Get the user ID from the session
-$id = $_SESSION['user_id'];
+if(isset($_SESSION['user_id'])) {
+    $id = $_SESSION['user_id'];
 
-// Check if the forms were submitted and update the database accordingly
-if($_SERVER["REQUEST_METHOD"] == "POST") {
-    if (isset($_POST['new_name'])) {
-        $new_name = $_POST['new_name'];
-        // Update the name in the database
-        $query = "UPDATE usuario SET nombre = '$new_name' WHERE usernum = $id";
-        $result = mysqli_query($con, $query);
-        if ($result) {
-            // Successful update
-            $message = 'Name updated successfully';
-        } else {
-            // Unsuccessful update
-            $message = 'Failed to update name';
-        }
-    } elseif (isset($_POST['new_email'])) {
-        $new_email = $_POST['new_email'];
-        // Update the email in the database
-        $query = "UPDATE usuario SET correo = '$new_email' WHERE usernum = $id";
-        $result = mysqli_query($con, $query);
-        if ($result) {
-            // Successful update
-            $message = 'Email updated successfully';
-        } else {
-            // Unsuccessful update
-            $message = 'Failed to update email';
-        }
-    } elseif (isset($_POST['new_password'])) {
-        $new_password = $_POST['new_password'];
-        // Update the password in the database
-        $query = "UPDATE usuario SET contrasenia = '$new_password' WHERE usernum = $id";
-        $result = mysqli_query($con, $query);
-        if ($result) {
-            // Successful update
-            $message = 'Password updated successfully';
-        } else {
-            // Unsuccessful update
-            $message = 'Failed to update password';
-        }
-    } elseif (isset($_POST['sign_out'])) {
-        // Sign out
-        session_destroy();
-        header('Location: index.php');
-        exit;
-    } elseif (isset($_POST['delete_account'])) {
-        // Delete the account
-        $query = "DELETE FROM usuario WHERE usernum = $id";
-        $result = mysqli_query($con, $query);
-        session_destroy();
-        header('Location: index.php');
-        exit;
+    // Check if the forms were submitted and update the database accordingly
+    if($_SERVER["REQUEST_METHOD"] == "POST") {
+        // rest of your code...
     }
+
+    // Fetch the user details from the database
+    $result = $con->query("SELECT * FROM usuario WHERE usernum = $id");
+
+    if ($result->num_rows > 0) {
+        // Fetch the user details
+        $row = $result->fetch_assoc();
+
+    // Check if the sign out button was clicked
+if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['sign_out'])) {
+  // Destroy the session
+  session_destroy();
+
+  // Redirect to the login page
+  header('Location: login.php');
+  exit;
 }
 
-// Fetch the user details from the database
-$result = $con->query("SELECT * FROM usuario WHERE usernum = $id");
-
-if ($result->num_rows > 0) {
-    // Fetch the user details
-    $row = $result->fetch_assoc();
 ?>
 
 <!--================User Profile Area =================-->
@@ -208,14 +182,19 @@ if ($result->num_rows > 0) {
     </div>
 </div>
 <!--================End User Profile Area =================-->
-
 <?php
-} else {
-    echo "User not found";
-}
+    } else {
+        echo "User not found";
+    }
 
-$con->close();
+    $con->close();
+} else {
+    // User is not logged in. Redirect them to the index page
+    header('Location: index.php');
+    exit;
+}
 ?>
+
 
   <!--::footer_part start::-->
   <footer class="footer_part">

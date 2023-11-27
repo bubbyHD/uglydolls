@@ -24,6 +24,16 @@
     <link rel="stylesheet" href="css/slick.css">
     <!-- style CSS -->
     <link rel="stylesheet" href="css/style.css">
+
+    <script>
+function confirmAccountCreation() {
+    var email = document.getElementById('email').value;
+    var password = document.getElementById('password').value;
+    return confirm('Are you sure you want to create an account with the following details?\n\nEmail: ' + email + '\nPassword: ' + password);
+}
+</script>
+
+
 </head>
 
 <body>
@@ -78,13 +88,13 @@
                         </div>
                         <div class="hearer_icon d-flex">
                             <a href="<?php echo $loggedIn ? 'profile.php' : 'login.php'; ?>"><i class="ti-user"></i></a>
-                            <div class="dropdown cart">
-                                <a class="dropdown-toggle" href="#" id="navbarDropdown3" role="button"
-                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <a href="cart.php" id="navbarDropdown3" role="button">
                                     <i class="fas fa-cart-plus"></i>
+                                    <?php if ($loggedIn && $cartCount > 0): ?>
+                                    <span class="badge badge-light"><?php echo $cartCount; ?></span>
+                                    <?php endif; ?>
                                 </a>
-                            </div>
-                        </div>                        
+                        </div>                          
                         </div>
                     </nav>
                 </div>
@@ -128,27 +138,25 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
                     <div class="login_part_form_iner">
                         <h3>Welcome Back ! <br>
                             Make a new account now!</h3>
-                            <form class="row contact_form" action="" method="post" novalidate="novalidate">
-                            <div class="col-md-12 form-group p_star">
-                                <input type="text" class="form-control" id="name" name="name" value=""
-                                    placeholder="Name">
-                            </div>
-                            <div class="col-md-12 form-group p_star">
-                                <input type="text" class="form-control" id="email" name="email" value=""
-                                    placeholder="Email">
-                            </div>
-                            <div class="col-md-12 form-group p_star">
-                                <input type="password" class="form-control" id="password" name="password" value=""
-                                    placeholder="Password">
-                            </div>
-                            <div class="col-md-12 form-group">
-                                <div class="creat_account d-flex align-items-center">
-                                </div>
-                                <button type="submit" value="submit" class="btn_3">
-                                    create
-                                </button>
-                            </div>
-                        </form>
+                            <form class="row contact_form" action="" method="post" onsubmit="return confirmAccountCreation()" novalidate="novalidate">
+    <div class="col-md-12 form-group p_star">
+        <input type="text" class="form-control" id="name" name="name" value="" placeholder="Name">
+    </div>
+    <div class="col-md-12 form-group p_star">
+        <input type="text" class="form-control" id="email" name="email" value="" placeholder="Email">
+    </div>
+    <div class="col-md-12 form-group p_star">
+        <input type="password" class="form-control" id="password" name="password" value="" placeholder="Password">
+    </div>
+    <div class="col-md-12 form-group">
+        <div class="creat_account d-flex align-items-center">
+        </div>
+        <button type="submit" value="submit" class="btn_3">
+            create
+        </button>
+    </div>
+</form>
+
                     </div>
                 </div>
             </div>

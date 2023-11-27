@@ -27,7 +27,7 @@
 </head>
 
 <body>
-    <?php
+<?php
     session_start();
 
     // Connect to your database
@@ -40,7 +40,28 @@
 
     // Check if the user is logged in
     $loggedIn = isset($_SESSION['user_id']);
-    ?>
+
+    // Fetch the number of items in the cart
+    if($loggedIn) {
+        $id = $_SESSION['user_id'];
+        $result = $con->query("SELECT SUM(quantity) as count FROM carrito WHERE usernum = $id");
+        $row = $result->fetch_assoc();
+        $cartCount = $row['count'];
+    } else {
+        $cartCount = 0; // or whatever you want the default to be
+    }
+?>
+
+<script>
+function checkLoginStatus() {
+    <?php if(!$loggedIn): ?>
+        alert('You are not signed in. Please sign in to add items to your cart.');
+        return false;
+    <?php else: ?>
+        return true;
+    <?php endif; ?>
+}
+</script>
     <!--::header part start::-->
     <header class="main_menu home_menu">
         <div class="container">
@@ -78,13 +99,13 @@
                         </div>
                         <div class="hearer_icon d-flex">
                             <a href="<?php echo $loggedIn ? 'profile.php' : 'login.php'; ?>"><i class="ti-user"></i></a>
-                            <div class="dropdown cart">
-                                <a class="dropdown-toggle" href="#" id="navbarDropdown3" role="button"
-                                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <a href="cart.php" id="navbarDropdown3" role="button">
                                     <i class="fas fa-cart-plus"></i>
+                                    <?php if ($loggedIn && $cartCount > 0): ?>
+                                    <span class="badge badge-light"><?php echo $cartCount; ?></span>
+                                    <?php endif; ?>
                                 </a>
-                            </div>
-                        </div>                        
+                        </div>                 
                         </div>
                     </nav>
                 </div>
@@ -159,12 +180,16 @@ if ($result->num_rows > 0) {
                         <?php echo $row['descripcion']; ?>
                     </p>
                     <div class="card_area d-flex justify-content-between align-items-center">
-                        <div class="product_count">
-                            <span class="inumber-decrement"> <i class="ti-minus"></i></span>
-                            <input class="input-number" type="text" value="1" min="1" max="10">
-                            <span class="number-increment"> <i class="ti-plus"></i></span>
-                        </div>
-                        <a href="#" class="btn_3">add to cart</a>
+                    <form action="cart.php" method="post" onsubmit="return checkLoginStatus()">
+    <div class="product_count">
+        <span class="inumber-decrement"> <i class="ti-minus"></i></span>
+        <input class="input-number" type="text" name="quantity" value="1" min="1" max="10">
+        <span class="number-increment"> <i class="ti-plus"></i></span>
+    </div>
+    <input type="hidden" name="add_product" value="1">
+    <input type="hidden" name="product_id" value="<?php echo $row['productonum']; ?>">
+    <input type="submit" value="Add to cart" class="btn_3">
+</form>
                     </div>
                 </div>
             </div>
@@ -180,7 +205,6 @@ if ($result->num_rows > 0) {
 
 $con->close();
 ?>
-
 
     <!-- product_list part start-->
     <section class="product_list best_seller">

@@ -47,46 +47,76 @@ if(!$loggedIn) {
 
 $id = $_SESSION['user_id'];
 
-// Check if the form to update/delete product was submitted
-if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_delete'])) {
-    $product_id = $_POST['product_id'];
-    $quantity = $_POST['quantity'];
-
-    // Check if the new quantity is 0
-    if ($quantity == 0) {
-        // Delete the product from the cart
-        $query = "DELETE FROM carrito WHERE usernum = $id AND productonum = $product_id";
-    } else {
-        // Update the quantity in the cart
-        $query = "UPDATE carrito SET quantity = $quantity WHERE usernum = $id AND productonum = $product_id";
-    }
-
-    // Execute the query
-    $result = mysqli_query($con, $query);
-
-    // Redirect back to the cart page
-    header('Location: cart.php');
-    exit;
-}
-
 // Check if the form to add product was submitted
-if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_product'])) {
-    $product_id = $_POST['product_id'];
-    $quantity = $_POST['quantity'];
+if($_SERVER["REQUEST_METHOD"] == "POST") {
+  $product_id = $_POST['product_id'];
+  $quantity = $_POST['quantity'];
 
-    // Add the product to the cart
-    $query = "INSERT INTO carrito (usernum, productonum, quantity) VALUES ($id, $product_id, $quantity)";
-    $result = mysqli_query($con, $query);
-    if ($result) {
-        // Successful insert
-        $message = 'Product added to cart successfully';
-    } else {
-        // Unsuccessful insert
-        $message = 'Failed to add product to cart';
-    }
+  // Fetch the product details from the database
+  $product_result = $con->query("SELECT * FROM producto WHERE productonum = $product_id");
+  $product_row = $product_result->fetch_assoc();
+  $stock = $product_row['stock'];
+
+  // Fetch the cart item details from the database
+  $cart_result = $con->query("SELECT * FROM carrito WHERE usernum = $id AND productonum = $product_id");
+  if ($cart_result->num_rows > 0) {
+      // The product is already in the cart
+      $cart_row = $cart_result->fetch_assoc();
+      $cart_quantity = $cart_row['quantity'];
+
+      if(isset($_POST['add_product'])) {
+          $new_quantity = $cart_quantity + $quantity;
+      } else if(isset($_POST['update_delete'])) {
+          $new_quantity = $quantity;
+      }
+
+      if ($new_quantity <= 0) {
+          // The new quantity is 0 or less, delete the product from the cart
+          $query = "DELETE FROM carrito WHERE usernum = $id AND productonum = $product_id";
+          $result = mysqli_query($con, $query);
+          if ($result) {
+              // Successful delete
+              $message = 'Product removed from cart successfully';
+          } else {
+              // Unsuccessful delete
+              $message = 'Failed to remove product from cart';
+          }
+      } else if ($new_quantity > $stock) {
+          // The new quantity is more than the quantity in stock
+          $_SESSION['message'] = 'The quantity requested is more than the quantity in stock';
+      } else {
+          // Update the quantity in the cart
+          $query = "UPDATE carrito SET quantity = $new_quantity WHERE usernum = $id AND productonum = $product_id";
+          $result = mysqli_query($con, $query);
+          if ($result) {
+              // Successful update
+              $message = 'Product quantity updated successfully';
+          } else {
+              // Unsuccessful update
+              $message = 'Failed to update product quantity';
+          }
+      }
+  } else if(isset($_POST['add_product'])) {
+      // The product is not in the cart
+      if ($quantity > $stock) {
+          // The quantity requested is more than the quantity in stock
+          $message = 'The quantity requested is more than the quantity in stock';
+      } else {
+          // Add the product to the cart
+          $query = "INSERT INTO carrito (usernum, productonum, quantity) VALUES ($id, $product_id, $quantity)";
+          $result = mysqli_query($con, $query);
+          if ($result) {
+              // Successful insert
+              $message = 'Product added to cart successfully';
+          } else {
+              // Unsuccessful insert
+              $message = 'Failed to add product to cart';
+          }
+      }
+  }
 }
-
 ?>
+
 
     <!--::header part start::-->
     <header class="main_menu home_menu">
@@ -132,6 +162,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_product'])) {
             </div>
         </div>
     </header>
+
     <!-- Header part end-->
 
 
@@ -229,7 +260,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['add_product'])) {
                                 <h5>Shipping</h5>
                             </td>
                             <td>
-                                <h5>$5.00</h5>
+                                <h5>Free!</h5>
                             </td>
                         </tr>
                     </tbody>
@@ -283,10 +314,10 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
           <div class="col-lg-4">
             <div class="footer_icon social_icon">
               <ul class="list-unstyled">
-                <li><a href="#" class="single_social_icon"><i class="fab fa-facebook-f"></i></a></li>
-                <li><a href="#" class="single_social_icon"><i class="fab fa-twitter"></i></a></li>
-                <li><a href="#" class="single_social_icon"><i class="fas fa-globe"></i></a></li>
-                <li><a href="#" class="single_social_icon"><i class="fab fa-behance"></i></a></li>
+                <li><a class="single_social_icon"><i class="fab fa-facebook-f"></i></a></li>
+                <li><a class="single_social_icon"><i class="fab fa-twitter"></i></a></li>
+                <li><a class="single_social_icon"><i class="fas fa-globe"></i></a></li>
+                <li><a class="single_social_icon"><i class="fab fa-behance"></i></a></li>
               </ul>
             </div>
           </div>

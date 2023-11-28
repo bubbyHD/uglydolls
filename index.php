@@ -167,52 +167,46 @@
             </div>
         </div>
     </section>
-    <section class="feature_part padding_top">
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-lg-8">
-                    <div class="section_tittle text-center">
-                        <h2>Featured: Best Sellers</h2>
-                    </div>
-                </div>
-            </div>
-            <div class="row align-items-center justify-content-between">
-                <div class="col-lg-7 col-sm-6">
-                    <div class="single_feature_post_text">
-                        <p>Keychain clip GUND plush</p>
-                        <h3>Trunko - Grape</h3>
-                        <a href="#" class="feature_btn">EXPLORE NOW <i class="fas fa-play"></i></a>
-                        <img src="uglydolls/pngs/trunkogrape.png" alt="">
-                    </div>
-                </div>
-                <div class="col-lg-5 col-sm-6">
-                    <div class="single_feature_post_text">
-                        <p>Keychain clip GUND plush</p>
-                        <h3>Wippy</h3>
-                        <a href="#" class="feature_btn">EXPLORE NOW <i class="fas fa-play"></i></a>
-                        <img src="uglydolls/pngs/wippy.png" alt="">
-                    </div>
-                </div>
-                <div class="col-lg-5 col-sm-6">
-                    <div class="single_feature_post_text">
-                        <p>Regular GUND plush</p>
-                        <h3>Big Toe</h3>
-                        <a href="#" class="feature_btn">EXPLORE NOW <i class="fas fa-play"></i></a>
-                        <img src="uglydolls/pngs/bigtoe.png" alt="">
-                    </div>
-                </div>
-                <div class="col-lg-7 col-sm-6">
-                    <div class="single_feature_post_text">
-                        <p>Regular GUND plush</p>
-                        <h3>Moxy - Dorothy</h3>
-                        <a href="#" class="feature_btn">EXPLORE NOW <i class="fas fa-play"></i></a>
-                        <img src="uglydolls/pngs/moxydorothy.png" alt="">
-                    </div>
+    <!-- product_list part start-->
+<section class="product_list best_seller">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-12">
+                <div class="section_tittle text-center">
+                    <h2>Featured: Best Sellers <span>shop</span></h2>
                 </div>
             </div>
         </div>
-    </section>
-    <!-- upcoming_event part start-->
+        <div class="row align-items-center justify-content-between">
+            <div class="col-lg-12">
+                <div class="best_product_slider owl-carousel">
+                    <?php
+                    // Fetch the best selling products from the database
+                    $result = $con->query("SELECT productonum, COUNT(*) AS count FROM pedido GROUP BY productonum ORDER BY count DESC LIMIT 5");
+                    while ($row = $result->fetch_assoc()) {
+                        $product_id = $row['productonum'];
+
+                        // Fetch the product details from the database
+                        $product_result = $con->query("SELECT * FROM producto WHERE productonum = $product_id");
+                        $product_row = $product_result->fetch_assoc();
+                    ?>
+                    <div class="single_product_item">
+                    <a href="single-product.php?id=<?php echo $product_row['productonum']; ?>">
+    <img src="https://lab.anahuac.mx/~a00444232/pngs/<?php echo $product_row['foto']; ?>" alt="">
+</a>
+                        <div class="single_product_text">
+                            <h4><?php echo $product_row['nombre']; ?></h4>
+                            <h3>$<?php echo $product_row['precio']; ?></h3>
+                        </div>
+                    </div>
+                    <?php
+                    }
+                    ?>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
     <!--::footer_part start::-->
     <footer class="footer_part">

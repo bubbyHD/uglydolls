@@ -54,11 +54,17 @@
 ?>
 
 <script>
-function checkLoginStatus() {
+function checkStockAndLoginStatus(stock) {
     <?php if(!$loggedIn): ?>
         alert('You are not signed in. Please sign in to add items to your cart.');
         return false;
     <?php else: ?>
+        var quantity = 1;  // The quantity being added to the cart
+        if (quantity > stock) {
+            // The quantity requested is more than the quantity in stock
+            alert('The quantity requested is more than the quantity in stock');
+            return false;
+        }
         return true;
     <?php endif; ?>
 }
@@ -223,7 +229,7 @@ if ($result->num_rows > 0) {
                 <div class="single_product_text">
                     <h4>' . $row["nombre"] . '</h4>
                     <h3>$' . $row["precio"] . '</h3>
-                    <form action="cart.php" method="post" onsubmit="return checkLoginStatus()" style="display: inline;">
+                    <form action="cart.php" method="post" onsubmit="return checkStockAndLoginStatus(stock)" style="display: inline;">
     <input type="hidden" name="add_product" value="1">
     <input type="hidden" name="product_id" value="' . $row['productonum'] . '">
     <input type="hidden" name="quantity" value="1">
@@ -265,8 +271,6 @@ echo '<li class="page-item">
 </nav>
 </div>
 </div>';
-
-$con->close();
 ?>
                 </div>
             </div>
@@ -275,60 +279,46 @@ $con->close();
 </section>
     <!--================End Category Product Area =================-->
 
-    <!-- product_list part start-->
     <section class="product_list best_seller">
-        <div class="container">
-            <div class="row justify-content-center">
-                <div class="col-lg-12">
-                    <div class="section_tittle text-center">
-                        <h2>Best Sellers <span>shop</span></h2>
-                    </div>
-                </div>
-            </div>
-            <div class="row align-items-center justify-content-between">
-                <div class="col-lg-12">
-                    <div class="best_product_slider owl-carousel">
-                        <div class="single_product_item">
-                            <img src="uglydolls/pngs/moxydorothy.png" alt="">
-                            <div class="single_product_text">
-                                <h4>Moxy - Dorothy</h4>
-                                <h3>$11.00</h3>
-                            </div>
-                        </div>
-                        <div class="single_product_item">
-                            <img src="uglydolls/pngs/wippy.png" alt="">
-                            <div class="single_product_text">
-                                <h4>Wippy</h4>
-                                <h3>$9.00</h3>
-                            </div>
-                        </div>
-                        <div class="single_product_item">
-                            <img src="uglydolls/pngs/bigtoe.png" alt="">
-                            <div class="single_product_text">
-                                <h4>Big Toe</h4>
-                                <h3>$15.00</h3>
-                            </div>
-                        </div>
-                        <div class="single_product_item">
-                            <img src="uglydolls/pngs/trunkogrape.png" alt="">
-                            <div class="single_product_text">
-                                <h4>Trunko - Grape</h4>
-                                <h3>$11.00</h3>
-                            </div>
-                        </div>
-                        <div class="single_product_item">
-                            <img src="uglydolls/pngs/babohair.png" alt="">
-                            <div class="single_product_text">
-                                <h4>Babo - Hair</h4>
-                                <h3>$11.00</h3>
-                            </div>
-                        </div>
-                    </div>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-12">
+                <div class="section_tittle text-center">
+                    <h2>Featured: Best Sellers <span>shop</span></h2>
                 </div>
             </div>
         </div>
-    </section>
-    <!-- product_list part end-->
+        <div class="row align-items-center justify-content-between">
+            <div class="col-lg-12">
+                <div class="best_product_slider owl-carousel">
+                    <?php
+                    // Fetch the best selling products from the database
+                    $result = $con->query("SELECT productonum, COUNT(*) AS count FROM pedido GROUP BY productonum ORDER BY count DESC LIMIT 5");
+                    while ($row = $result->fetch_assoc()) {
+                        $product_id = $row['productonum'];
+
+                        // Fetch the product details from the database
+                        $product_result = $con->query("SELECT * FROM producto WHERE productonum = $product_id");
+                        $product_row = $product_result->fetch_assoc();
+                    ?>
+                    <div class="single_product_item">
+                    <a href="single-product.php?id=<?php echo $product_row['productonum']; ?>">
+    <img src="https://lab.anahuac.mx/~a00444232/pngs/<?php echo $product_row['foto']; ?>" alt="">
+</a>
+                        <div class="single_product_text">
+                            <h4><?php echo $product_row['nombre']; ?></h4>
+                            <h3>$<?php echo $product_row['precio']; ?></h3>
+                        </div>
+                    </div>
+                    <?php
+                    }
+                    $con->close();
+                    ?>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
     <!--::footer_part start::-->
     <footer class="footer_part">

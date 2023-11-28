@@ -24,22 +24,6 @@
     <link rel="stylesheet" href="css/slick.css">
     <!-- style CSS -->
     <link rel="stylesheet" href="css/style.css">
-    <script>
-    function toggleTable() {
-        var table = document.getElementById("orderHistoryTable");
-        if (table.style.display === "none") {
-            table.style.display = "block";
-        } else {
-            table.style.display = "none";
-        }
-    }
-    </script>
-    <style>
-#orderHistoryTable {
-    display: none;
-}
-</style>
-
 </head>
 
 <body>
@@ -58,7 +42,7 @@
     $loggedIn = isset($_SESSION['user_id']);
 
     // Fetch the number of items in the cart
-    if(isset($_SESSION['user_id'])) {
+    if($loggedIn) {
         $id = $_SESSION['user_id'];
         $result = $con->query("SELECT SUM(quantity) as count FROM carrito WHERE usernum = $id");
         $row = $result->fetch_assoc();
@@ -67,8 +51,8 @@
         $cartCount = 0; // or whatever you want the default to be
     }
 ?>
-    <!--::header part start::-->
-    <header class="main_menu home_menu">
+  <!--::header part start::-->
+  <header class="main_menu home_menu">
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-lg-12">
@@ -110,7 +94,7 @@
                                     <span class="badge badge-light"><?php echo $cartCount; ?></span>
                                     <?php endif; ?>
                                 </a>
-                        </div>                    
+                        </div>               
                         </div>
                     </nav>
                 </div>
@@ -118,177 +102,38 @@
         </div>
     </header>
     <!-- Header part end-->
-  <!--================End Home Banner Area =================-->
 
-  <?php
-
-// Connect to your database
-$con=mysqli_connect("localhost","root","","uglydolls");
-
-// Check connection
-if (mysqli_connect_errno()) {
-    echo "Failed to connect to MySQL: " . mysqli_connect_error();
-}
-
-// Get the user ID from the session
-if(isset($_SESSION['user_id'])) {
-    $id = $_SESSION['user_id'];
-
-    // Check if the forms were submitted and update the database accordingly
-    if($_SERVER["REQUEST_METHOD"] == "POST") {
-        // rest of your code...
-    }
-
-    // Fetch the user details from the database
-    $result = $con->query("SELECT * FROM usuario WHERE usernum = $id");
-
-    if ($result->num_rows > 0) {
-        // Fetch the user details
-        $row = $result->fetch_assoc();
-
-    // Check if the sign out button was clicked
-if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['sign_out'])) {
-  // Destroy the session
-  session_destroy();
-
-  // Redirect to the login page
-  header('Location: login.php');
-  exit;
-}
-
-?>
-
-<!--================User Profile Area =================-->
-<div class="user_profile_area section_padding">
+  <!--================Home Banner Area =================-->
+  <!-- breadcrumb start-->
+  <section class="breadcrumb breadcrumb_bg">
     <div class="container">
-        <div class="row s_user_profile_inner justify-content-between">
-                <div class="user_profile_info">
-                    <h3><span>Name: </span><?php echo $row['nombre']; ?> <a href="#" class="genric-btn default-border" onclick="document.getElementById('change_name_form').style.display='block'">Change</a></h3>
-                    <form id="change_name_form" style="display: none;" action="profile.php" method="post">
-                        <label for="new_name">New Name:</label>
-                        <input type="text" id="new_name" name="new_name">
-                        <input type="submit" value="Submit">
-                    </form>
-
-                    <h2><span>Email: </span><?php echo $row['correo']; ?> <a href="#" class="genric-btn default-border" onclick="document.getElementById('change_email_form').style.display='block'">Change</a></h2>
-                    <form id="change_email_form" style="display: none;" action="profile.php" method="post">
-                        <label for="new_email">New Email:</label>
-                        <input type="text" id="new_email" name="new_email">
-                        <input type="submit" value="Submit">
-                    </form>
-
-                    <p><span>Password: </span><?php echo $row['contrasenia']; ?> <a href="#" class="genric-btn default-border" onclick="document.getElementById('change_password_form').style.display='block'">Change</a></p>
-                    <form id="change_password_form" style="display: none;" action="profile.php" method="post">
-                        <label for="new_password">New Password:</label>
-                        <input type="password" id="new_password" name="new_password">
-                        <input type="submit" value="Submit">
-                    </form>
-                    <br>
-                    <form action="profile.php" method="post">
-                    <input type="submit" name="sign_out" value="Sign out" class="genric-btn primary-border e-large">
-                    </form>
-                    <br>
-                    <form action="profile.php" method="post" onsubmit="return confirm('Are you sure you want to delete your account? This action cannot be undone.');">
-                        <input type="submit" name="delete_account" value="Delete account" class="genric-btn primary e-large">
-                    </form>
-                </div>
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+          <div class="breadcrumb_iner">
+            <div class="breadcrumb_iner_item">
+              <h2>Order Confirmation</h2>
             </div>
+          </div>
         </div>
+      </div>
     </div>
-<!--================End User Profile Area =================-->
+  </section>
+  <!-- breadcrumb start-->
 
-<!--================Order History Area =================-->
-      <div class="row justify-content-around">
-<a class="genric-btn primary-border circle arrow" onclick="toggleTable()">Toggle Order History<span class="lnr lnr-arrow-right"></span></a>
-</div>
-<section class="order_history_area padding_top">
+  <!--================ confirmation part start =================-->
+  <section class="confirmation_part padding_top">
     <div class="container">
-        <div class="order_history_inner">
-            <div class="table-responsive">
-            <table class="table" id="orderHistoryTable">
-                    <thead>
-                        <tr>
-                            <th scope="col">Product</th>
-                            <th scope="col">Price</th>
-                            <th scope="col">Quantity</th>
-                            <th scope="col">Total</th>
-                            <th scope="col">Order Date</th>
-                            <th scope="col">Address</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                    <?php
-// Fetch the order items from the database
-$result = $con->query("SELECT * FROM pedido WHERE usernum = $id ORDER BY timestamp");
-$last_timestamp = null;
-while ($row = $result->fetch_assoc()) {
-    $product_id = $row['productonum'];
-    $quantity = $row['quantity'];
-    $total = $row['pedidototal'];
-    $timestamp = $row['timestamp'];
-    $address = $row['direccion'];
-
-    // Fetch the product details from the database
-    $product_result = $con->query("SELECT * FROM producto WHERE productonum = $product_id");
-    $product_row = $product_result->fetch_assoc();
-    $product_name = $product_row['nombre'];
-    $product_price = $product_row['precio'];
-?>
-<tr>
-    <td>
-        <div class="media">
-            <div class="d-flex">
-            <img src="https://lab.anahuac.mx/~a00444232/pngs/<?php echo $product_row['foto']; ?>" style="max-width:50px; max-height:50px;" alt="" />
-            </div>
-            <div class="media-body">
-                <p><?php echo $product_name; ?></p>
-            </div>
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="confirmation_tittle">
+            <span>Thank you. Your order has been received.</span>
+            <span>To view past orders, you may do so by viewing your <a href="profile.php">profile.</a></span>
+          </div>
         </div>
-    </td>
-    <td>
-        <h5>$<?php echo $product_price; ?></h5>
-    </td>
-    <td>
-        <h5><?php echo $quantity; ?></h5>
-    </td>
-    <td>
-        <?php
-        if ($timestamp != $last_timestamp) {
-            echo "<h5>$" . $total . "</h5>";
-            $last_timestamp = $timestamp;
-        }
-        ?>
-    </td>
-    <td>
-        <h5><?php echo $timestamp; ?></h5>
-    </td>
-    <td>
-        <h5><?php echo $address; ?></h5>
-    </td>
-</tr>
-<?php
-}
-?>
-                    </tbody>
-                </table>
-            </div>
-        </div>
+      </div>
     </div>
-</section>
-<!--================End Order History Area =================-->
-
-<?php
-    } else {
-        echo "User not found";
-    }
-
-    $con->close();
-} else {
-    // User is not logged in. Redirect them to the index page
-    header('Location: index.php');
-    exit;
-}
-?>
+  </section>
+  <!--================ confirmation part end =================-->
 
   <!--::footer_part start::-->
   <footer class="footer_part">
@@ -314,15 +159,16 @@ while ($row = $result->fetch_assoc()) {
           </div>
         </div>
       </div>
+
     </div>
     <div class="copyright_part">
       <div class="container">
         <div class="row">
           <div class="col-lg-8">
             <div class="copyright_text">
-              <P>
-Copyright &copy;<script>document.write(new Date().getFullYear());</script> All rights reserved | Not really</a>
-</P>
+              <P><!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. -->
+Copyright &copy;<script>document.write(new Date().getFullYear());</script> All rights reserved | This template is made with THIN AIR</a>
+<!-- Link back to Colorlib can't be removed. Template is licensed under CC BY 3.0. --></P>
             </div>
           </div>
           <div class="col-lg-4">
@@ -351,7 +197,7 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
   <!-- easing js -->
   <script src="js/jquery.magnific-popup.js"></script>
   <!-- swiper js -->
-  <script src="js/lightslider.min.js"></script>
+  <script src="js/swiper.min.js"></script>
   <!-- swiper js -->
   <script src="js/masonry.pkgd.js"></script>
   <!-- particles js -->
@@ -359,7 +205,6 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
   <script src="js/jquery.nice-select.min.js"></script>
   <!-- slick js -->
   <script src="js/slick.min.js"></script>
-  <script src="js/swiper.jquery.js"></script>
   <script src="js/jquery.counterup.min.js"></script>
   <script src="js/waypoints.min.js"></script>
   <script src="js/contact.js"></script>
@@ -368,9 +213,19 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
   <script src="js/jquery.validate.min.js"></script>
   <script src="js/mail-script.js"></script>
   <script src="js/stellar.js"></script>
+  <script src="js/price_rangs.js"></script>
   <!-- custom js -->
-  <script src="js/theme.js"></script>
   <script src="js/custom.js"></script>
 </body>
+
+</html>
+
+</html>
+
+</html>
+
+</html>
+
+</html>
 
 </html>

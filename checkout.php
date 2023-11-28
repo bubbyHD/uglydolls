@@ -25,98 +25,154 @@
     <!-- style CSS -->
     <link rel="stylesheet" href="css/style.css">
 </head>
+<?php
+session_start();
+
+// Connect to your database
+$con=mysqli_connect("localhost","root","","uglydolls");
+
+// Check connection
+if (mysqli_connect_errno()) {
+    echo "Failed to connect to MySQL: " . mysqli_connect_error();
+}
+
+// Check if the user is logged in
+$loggedIn = isset($_SESSION['user_id']);
+if(!$loggedIn) {
+    // User is not logged in. Redirect them to the login page
+    header('Location: login.php');
+    exit;
+}
+
+$id = $_SESSION['user_id'];
+// Fetch the user's data from the database
+$user_result = $con->query("SELECT * FROM usuario WHERE usernum = $id");
+$user = $user_result->fetch_assoc();
+
+// Fetch the number of items in the cart
+if($loggedIn) {
+  $id = $_SESSION['user_id'];
+  $result = $con->query("SELECT SUM(quantity) as count FROM carrito WHERE usernum = $id");
+  $row = $result->fetch_assoc();
+  $cartCount = $row['count'];
+} else {
+  $cartCount = 0; // or whatever you want the default to be
+}
+
+// Fetch the items in the cart from the database
+$result = $con->query("SELECT carrito.productonum, carrito.quantity, producto.nombre, producto.precio FROM carrito JOIN producto ON carrito.productonum = producto.productonum WHERE carrito.usernum = $id");
+
+// Calculate the total cost of the items in the cart
+$total = 0;
+while ($row = $result->fetch_assoc()) {
+    $product_id = $row['productonum'];
+    $quantity = $row['quantity'];
+
+    // Fetch the product details from the database
+    $product_result = $con->query("SELECT * FROM producto WHERE productonum = $product_id");
+    $product_row = $product_result->fetch_assoc();
+    $product_price = $product_row['precio'];
+
+    $total += $product_price * $quantity;
+}
+
+// Fetch the items in the cart from the database again for displaying in the order
+$result = $con->query("SELECT carrito.productonum, carrito.quantity, producto.nombre, producto.precio FROM carrito JOIN producto ON carrito.productonum = producto.productonum WHERE carrito.usernum = $id");
+
+// Check if the form to checkout was submitted
+if($_SERVER["REQUEST_METHOD"] == "POST") {
+  $address = $_POST['address'];
+  $card_number = $_POST['card_number'];
+
+  // Check if address or card number is empty
+  if(empty($address) || empty($card_number)) {
+      $message = "Address and card number must not be empty.";
+  } else {
+      // Fetch the items in the cart from the database
+$cart_items = $con->query("SELECT productonum, quantity FROM carrito WHERE usernum = $id");
+
+while ($item = $cart_items->fetch_assoc()) {
+    $productonum = $item['productonum'];
+    $quantity = $item['quantity'];
+
+    // Create a new row in the pedido table for each item in the cart
+    $query = "INSERT INTO pedido (usernum, productonum, quantity, pedidototal, direccion, tarjeta) VALUES ($id, $productonum, $quantity, $total, '$address', '$card_number')";
+    $result = mysqli_query($con, $query);
+
+    // Check if the query was successful
+    if(!$result) {
+        // Unsuccessful query
+        $message = "There was an error processing your order. Please try again.";
+        break;
+    }
+}
+
+if($result) {
+    // Delete the items from the carrito table
+    $query = "DELETE FROM carrito WHERE usernum = $id";
+    $query = "UPDATE producto SET stock = stock - $quantity WHERE productonum = $productonum";
+    $result = mysqli_query($con, $query);
+
+    // Redirect to the confirmation page
+    header('Location: confirmation.php');
+    exit;
+}
+  }
+}
+?>
 
 <body>
   <!--::header part start::-->
   <header class="main_menu home_menu">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-lg-12">
-                <nav class="navbar navbar-expand-lg navbar-light">
-                    <a class="navbar-brand" href="index.html"> <img src="img/logo.png" alt="logo"> </a>
-                    <button class="navbar-toggler" type="button" data-toggle="collapse"
-                        data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                        <span class="menu_icon"><i class="fas fa-bars"></i></span>
-                    </button>
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-12">
+                    <nav class="navbar navbar-expand-lg navbar-light">
+                        <a class="navbar-brand" href="index.php"> <img src="uglydolls/indexlogo.png" alt="logo"> </a>
+                        <button class="navbar-toggler" type="button" data-toggle="collapse"
+                            data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                            aria-expanded="false" aria-label="Toggle navigation">
+                            <span class="menu_icon"><i class="fas fa-bars"></i></span>
+                        </button>
 
-                    <div class="collapse navbar-collapse main-menu-item" id="navbarSupportedContent">
-                        <ul class="navbar-nav">
-                            <li class="nav-item">
-                                <a class="nav-link" href="index.html">Home</a>
-                            </li>
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="blog.html" id="navbarDropdown_1"
-                                    role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    Shop
-                                </a>
-                                <div class="dropdown-menu" aria-labelledby="navbarDropdown_1">
-                                    <a class="dropdown-item" href="category.html"> shop category</a>
-                                    <a class="dropdown-item" href="single-product.html">product details</a>
-                                    
-                                </div>
-                            </li>
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="blog.html" id="navbarDropdown_3"
-                                    role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    pages
-                                </a>
-                                <div class="dropdown-menu" aria-labelledby="navbarDropdown_2">
-                                    <a class="dropdown-item" href="login.html"> login</a>
-                                    <a class="dropdown-item" href="tracking.html">tracking</a>
-                                    <a class="dropdown-item" href="checkout.html">product checkout</a>
-                                    <a class="dropdown-item" href="cart.html">shopping cart</a>
-                                    <a class="dropdown-item" href="confirmation.html">confirmation</a>
-                                    <a class="dropdown-item" href="elements.html">elements</a>
-                                </div>
-                            </li>
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="blog.html" id="navbarDropdown_2"
-                                    role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    blog
-                                </a>
-                                <div class="dropdown-menu" aria-labelledby="navbarDropdown_2">
-                                    <a class="dropdown-item" href="blog.html"> blog</a>
-                                    <a class="dropdown-item" href="single-blog.html">Single blog</a>
-                                </div>
-                            </li>
-                            
-                            <li class="nav-item">
-                                <a class="nav-link" href="contact.html">Contact</a>
-                            </li>
-                        </ul>
-                    </div>
-                    <div class="hearer_icon d-flex">
-                        <a id="search_1" href="javascript:void(0)"><i class="ti-search"></i></a>
-                        <a href=""><i class="ti-heart"></i></a>
-                        <div class="dropdown cart">
-                            <a class="dropdown-toggle" href="#" id="navbarDropdown3" role="button"
-                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="fas fa-cart-plus"></i>
-                            </a>
-                            <!-- <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                <div class="single_product">
-
-                                </div>
-                            </div> -->
-                            
+                        <div class="collapse navbar-collapse main-menu-item" id="navbarSupportedContent">
+                            <ul class="navbar-nav">
+                                <li class="nav-item">
+                                    <a class="nav-link" href="index.php">Home</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="category.php">Buy Uglydoll</a>
+                                </li>
+                                <?php if ($loggedIn) : ?>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="profile.php">Profile</a>
+                                </li>
+                                <?php else : ?>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="login.php">Login</a>
+                                </li>
+                                <?php endif; ?>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="about.php">About</a>
+                                </li>
+                            </ul>
                         </div>
-                    </div>
-                </nav>
+                        <div class="hearer_icon d-flex">
+                            <a href="<?php echo $loggedIn ? 'profile.php' : 'login.php'; ?>"><i class="ti-user"></i></a>
+                                <a href="cart.php" id="navbarDropdown3" role="button">
+                                    <i class="fas fa-cart-plus"></i>
+                                    <?php if ($loggedIn && $cartCount > 0): ?>
+                                    <span class="badge badge-light"><?php echo $cartCount; ?></span>
+                                    <?php endif; ?>
+                                </a>
+                        </div>                           
+                        </div>
+                    </nav>
+                </div>
             </div>
         </div>
-    </div>
-    <div class="search_input" id="search_input_box">
-        <div class="container ">
-            <form class="d-flex justify-content-between search-inner">
-                <input type="text" class="form-control" id="search_input" placeholder="Search Here">
-                <button type="submit" class="btn"></button>
-                <span class="ti-close" id="close_search" title="Close Search"></span>
-            </form>
-        </div>
-    </div>
-</header>
-  <!-- Header part end-->
+    </header>
+    <!-- Header part end-->
 
   <!--================Home Banner Area =================-->
   <!-- breadcrumb start-->
@@ -135,95 +191,92 @@
   </section>
   <!-- breadcrumb start-->
 
-  <!--================Checkout Area =================-->
-  <section class="checkout_area padding_top">
+<!--================Checkout Area =================-->
+<form method="post" action="">
+<section class="checkout_area padding_top">
     <div class="container">
-      <div class="billing_details">
-        <div class="row">
-          <div class="col-lg-8">
-            <h3>Order Details</h3>
-            <div class="col-md-12 form-group">
-                <input type="text" class="form-control" id="company" name="name" placeholder="Name" />
-              </div>
-              <div class="col-md-12 form-group">
-                <input type="text" class="form-control" id="company" name="email" placeholder="Email" />
-              </div>
-              <div class="col-md-12 form-group">
-                <div class="creat_account">
-                  <h3>Shipping Details</h3>
-                  <div class="col-md-6 form-group p_star">
-                <input type="text" class="form-control" id="address" name="address" />
-                <span class="placeholder" data-placeholder="Address"></span>
-                  </div>
-                </div>
-                <div class="creat_account">
-                  <h3>Payment Details</h3>
-                  <div class="col-md-6 form-group p_star">
-                <input type="text" class="form-control" id="number" name="number" />
-                <span class="placeholder" data-placeholder="Credit card number"></span>
-              </div>
-                </div>
-              </div>
-            </form>
-          </div>
-          <div class="col-lg-4">
-            <div class="order_box">
-              <h2>Your Order</h2>
-              <ul class="list">
-                <li>
-                  <a href="#">Product
-                    <span>Total</span>
-                  </a>
-                </li>
-                <li>
-                  <a href="#">Fresh Blackberry
-                    <span class="middle">x 02</span>
-                    <span class="last">$720.00</span>
-                  </a>
-                </li>
-                <li>
-                  <a href="#">Fresh Tomatoes
-                    <span class="middle">x 02</span>
-                    <span class="last">$720.00</span>
-                  </a>
-                </li>
-                <li>
-                  <a href="#">Fresh Brocoli
-                    <span class="middle">x 02</span>
-                    <span class="last">$720.00</span>
-                  </a>
-                </li>
-              </ul>
-              <ul class="list list_2">
-                <li>
-                  <a href="#">Subtotal
-                    <span>$2160.00</span>
-                  </a>
-                </li>
-                <li>
-                  <a href="#">Shipping
-                    <span>Flat rate: $5.00</span>
-                  </a>
-                </li>
-                <li>
-                  <a href="#">Total
-                    <span>$2210.00</span>
-                  </a>
-                </li>
-              </ul>
-              <div class="creat_account">
-                <input type="checkbox" id="f-option4" name="selector" />
-                <label for="f-option4">I've read and accept the </label>
-                <a href="#">terms & conditions*</a>
-              </div>
-              <a class="btn_3" href="confirmation.php">Proceed to Pay</a>
-            </div>
-          </div>
+        <div class="billing_details">
+            <div class="row">
+                <div class="col-lg-8">
+                <h3>Order Details</h3>
+    <?php if(isset($error)): ?>
+        <div class="alert alert-danger" role="alert">
+            <?php echo $error; ?>
         </div>
-      </div>
+    <?php endif; ?>
+                    <div class="col-md-12 form-group">
+                        <input type="text" class="form-control" id="company" name="name" value="<?php echo $user['nombre']; ?>" readonly />
+                    </div>
+                    <div class="col-md-12 form-group">
+                        <input type="text" class="form-control" id="company" name="email" value="<?php echo $user['correo']; ?>" readonly />
+                    </div>
+                    <div class="col-md-12 form-group">
+                        <div class="creat_account">
+                            <h3>Shipping Details</h3>
+                            <div class="col-md-6 form-group p_star">
+                            <input type="text" class="form-control" id="address" name="address" placeholder="Address" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Address'" />
+                            </div>
+                        </div>
+                        <div class="creat_account">
+                            <h3>Payment Details</h3>
+                            <div class="col-md-6 form-group p_star">
+                            <input type="text" class="form-control" id="number" name="card_number" placeholder="Credit card number" onfocus="this.placeholder = ''" onblur="this.placeholder = 'Credit card number'" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4">
+                    <div class="order_box">
+                        <h2>Your Order</h2>
+                        <ul class="list">
+    <li>
+        <a href="#" style="pointer-events: none;">Product
+            <span>Total</span>
+        </a>
+    </li>
+    <?php while ($row = $result->fetch_assoc()): ?>
+    <li>
+        <a href="#" style="pointer-events: none;"><?php echo $row['nombre']; ?>
+            <span class="middle">x <?php echo $row['quantity']; ?></span>
+            <span class="last">$<?php echo $row['precio'] * $row['quantity']; ?></span>
+        </a>
+    </li>
+    <?php endwhile; ?>
+</ul>
+                        <ul class="list list_2">
+                            <li>
+                                <a href="#" style="pointer-events: none;">Subtotal
+                                    <span>$<?php echo $total; ?></span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" style="pointer-events: none;">Shipping
+                                    <span>Flat rate: Free!</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" style="pointer-events: none;">Total
+                                    <span>$<?php echo $total; ?></span>
+                                </a>
+                            </li>
+                        </ul>
+                        <div class="creat_account">
+                            <input type="checkbox" id="f-option4" name="selector" />
+                            <label for="f-option4">I've read and accept the </label>
+                            <a href="#">terms & conditions*</a>
+                        </div>
+                        <button type="submit" value="submit" class="btn_3"> Complete Order</button>
+    <?php if (!empty($message)) : ?>
+    <div class="genric-btn disable radius"><?php echo $message; ?></div>
+    <?php endif; ?>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
-  </section>
-  <!--================End Checkout Area =================-->
+    </form>
+</section>
+<!--================End Checkout Area =================-->
 
   <!--::footer_part start::-->
   <footer class="footer_part">

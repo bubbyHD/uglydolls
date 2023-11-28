@@ -99,17 +99,14 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
   } else if(isset($_POST['add_product'])) {
       // The product is not in the cart
       if ($quantity > $stock) {
-          // The quantity requested is more than the quantity in stock
           $message = 'The quantity requested is more than the quantity in stock';
       } else {
           // Add the product to the cart
           $query = "INSERT INTO carrito (usernum, productonum, quantity) VALUES ($id, $product_id, $quantity)";
           $result = mysqli_query($con, $query);
           if ($result) {
-              // Successful insert
               $message = 'Product added to cart successfully';
           } else {
-              // Unsuccessful insert
               $message = 'Failed to add product to cart';
           }
       }

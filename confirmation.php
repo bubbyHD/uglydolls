@@ -48,8 +48,18 @@
         $row = $result->fetch_assoc();
         $cartCount = $row['count'];
     } else {
-        $cartCount = 0; // or whatever you want the default to be
+        $cartCount = 0; 
     }
+
+if (!isset($_SESSION['checkout'])) {
+    // The user did not come from the checkout page. Redirect them to the home page.
+    header('Location: index.php');
+    exit;
+} else {
+    // The user came from the checkout page. Unset the session variable for future requests.
+    unset($_SESSION['checkout']);
+}
+
 ?>
   <!--::header part start::-->
   <header class="main_menu home_menu">

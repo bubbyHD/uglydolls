@@ -58,9 +58,8 @@ function checkStockAndLoginStatus(stock) {
         alert('You are not signed in. Please sign in to add items to your cart.');
         return false;
     <?php else: ?>
-        var quantity = 1;  // The quantity being added to the cart
+        var quantity = 1;  // quantity being added to the cart
         if (quantity > stock) {
-            // The quantity requested is more than the quantity in stock
             alert('The quantity requested is more than the quantity in stock');
             return false;
         }
@@ -218,12 +217,10 @@ if ($result->num_rows > 0) {
             <div class="col-lg-12">
                 <div class="best_product_slider owl-carousel">
                     <?php
-                    // Fetch the best selling products from the database
                     $result = $con->query("SELECT productonum, COUNT(*) AS count FROM pedido GROUP BY productonum ORDER BY count DESC LIMIT 5");
                     while ($row = $result->fetch_assoc()) {
                         $product_id = $row['productonum'];
 
-                        // Fetch the product details from the database
                         $product_result = $con->query("SELECT * FROM producto WHERE productonum = $product_id");
                         $product_row = $product_result->fetch_assoc();
                     ?>

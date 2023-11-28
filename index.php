@@ -48,7 +48,7 @@
         $row = $result->fetch_assoc();
         $cartCount = $row['count'];
     } else {
-        $cartCount = 0; // or whatever you want the default to be
+        $cartCount = 0; 
     }
 ?>
     <!--::header part start::-->
@@ -181,12 +181,10 @@
             <div class="col-lg-12">
                 <div class="best_product_slider owl-carousel">
                     <?php
-                    // Fetch the best selling products from the database
                     $result = $con->query("SELECT productonum, COUNT(*) AS count FROM pedido GROUP BY productonum ORDER BY count DESC LIMIT 5");
                     while ($row = $result->fetch_assoc()) {
                         $product_id = $row['productonum'];
 
-                        // Fetch the product details from the database
                         $product_result = $con->query("SELECT * FROM producto WHERE productonum = $product_id");
                         $product_row = $product_result->fetch_assoc();
                     ?>

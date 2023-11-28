@@ -49,7 +49,7 @@
         $row = $result->fetch_assoc();
         $cartCount = $row['count'];
     } else {
-        $cartCount = 0; // or whatever you want the default to be
+        $cartCount = 0; 
     }
 ?>
 
@@ -61,7 +61,6 @@ function checkStockAndLoginStatus(stock) {
     <?php else: ?>
         var quantity = 1;  // The quantity being added to the cart
         if (quantity > stock) {
-            // The quantity requested is more than the quantity in stock
             alert('The quantity requested is more than the quantity in stock');
             return false;
         }

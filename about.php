@@ -48,7 +48,7 @@
         $row = $result->fetch_assoc();
         $cartCount = $row['count'];
     } else {
-        $cartCount = 0; // or whatever you want the default to be
+        $cartCount = 0; 
     }
 ?>
     <!--::header part start::-->

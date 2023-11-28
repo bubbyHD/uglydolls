@@ -48,7 +48,7 @@
         $row = $result->fetch_assoc();
         $cartCount = $row['count'];
     } else {
-        $cartCount = 0; // or whatever you want the default to be
+        $cartCount = 0; 
     }
 ?>
     <!--::header part start::-->
@@ -140,7 +140,6 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
         header('Location: profile.php');
         exit;
     } else {
-        // Unsuccessful login
         $message = 'Email and password do not match any account';
     }
 }

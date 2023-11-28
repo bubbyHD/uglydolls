@@ -56,7 +56,7 @@ if($loggedIn) {
   $row = $result->fetch_assoc();
   $cartCount = $row['count'];
 } else {
-  $cartCount = 0; // or whatever you want the default to be
+  $cartCount = 0; 
 }
 
 // Fetch the items in the cart from the database
@@ -89,34 +89,44 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
       $message = "Address and card number must not be empty.";
   } else {
       // Fetch the items in the cart from the database
-$cart_items = $con->query("SELECT productonum, quantity FROM carrito WHERE usernum = $id");
+      $cart_items = $con->query("SELECT productonum, quantity FROM carrito WHERE usernum = $id");
 
-while ($item = $cart_items->fetch_assoc()) {
-    $productonum = $item['productonum'];
-    $quantity = $item['quantity'];
+      while ($item = $cart_items->fetch_assoc()) {
+          $productonum = $item['productonum'];
+          $quantity = $item['quantity'];
 
-    // Create a new row in the pedido table for each item in the cart
-    $query = "INSERT INTO pedido (usernum, productonum, quantity, pedidototal, direccion, tarjeta) VALUES ($id, $productonum, $quantity, $total, '$address', '$card_number')";
-    $result = mysqli_query($con, $query);
+          // Create a new row in the pedido table for each item in the cart
+          $query = "INSERT INTO pedido (usernum, productonum, quantity, pedidototal, direccion, tarjeta) VALUES ($id, $productonum, $quantity, $total, '$address', '$card_number')";
+          $result = mysqli_query($con, $query);
 
-    // Check if the query was successful
-    if(!$result) {
-        // Unsuccessful query
-        $message = "There was an error processing your order. Please try again.";
-        break;
-    }
-}
+          // Check if the query was successful
+          if($result) {
+              // Subtract the quantity from the stock of the product
+              $query = "UPDATE producto SET stock = stock - $quantity WHERE productonum = $productonum";
+              $result = mysqli_query($con, $query);
+          }
 
-if($result) {
-    // Delete the items from the carrito table
-    $query = "DELETE FROM carrito WHERE usernum = $id";
-    $query = "UPDATE producto SET stock = stock - $quantity WHERE productonum = $productonum";
-    $result = mysqli_query($con, $query);
+          if(!$result) {
+              // Unsuccessful query or update
+              $message = "There was an error processing your order. Please try again.";
+              break;
+          }
+      }
 
-    // Redirect to the confirmation page
-    header('Location: confirmation.php');
-    exit;
-}
+      if($result) {
+          // Delete the items from the carrito table
+          $query = "DELETE FROM carrito WHERE usernum = $id";
+          $result = mysqli_query($con, $query);
+
+          if($result) {
+            $_SESSION['checkout'] = true;         
+              // Redirect to the confirmation page
+              header('Location: confirmation.php');
+              exit;
+          } else {
+              $message = "There was an error deleting items from the cart. Please try again.";
+          }
+      }
   }
 }
 ?>

@@ -29,7 +29,7 @@
 function confirmAccountCreation() {
     var email = document.getElementById('email').value;
     var password = document.getElementById('password').value;
-    return confirm('Are you sure you want to create an account with the following details?\n\nEmail: ' + email + '\nPassword: ' + password);
+    return confirm('Are you sure you want to create an account with the following details?\n\nEmail: ' + email + '\nPassword: ****' /* + password*/);
 }
 </script>
 

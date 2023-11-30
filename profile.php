@@ -156,6 +156,25 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['sign_out'])) {
   exit;
 }
 
+// Check if the delete account button was clicked
+if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_account'])) {
+    // Delete the user's account from the database
+    $query = "DELETE FROM usuario WHERE usernum = $id";
+    $result = mysqli_query($con, $query);
+  
+    if($result) {
+      // Destroy the session
+      session_destroy();
+  
+      // Redirect to the home page
+      header('Location: index.php');
+      exit;
+    } else {
+      // Unsuccessful delete
+      $message = "There was an error deleting your account. Please try again.";
+    }
+  }
+
 ?>
 
 <!--================User Profile Area =================-->
@@ -177,7 +196,7 @@ if($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['sign_out'])) {
                         <input type="submit" value="Submit">
                     </form>
 
-                    <p><span>Password: </span><?php echo $row['contrasenia']; ?> <a href="#" class="genric-btn default-border" onclick="document.getElementById('change_password_form').style.display='block'">Change</a></p>
+                    <p><span>Password: ***** </span><?php // echo $row['contrasenia']; ?> <a href="#" class="genric-btn default-border" onclick="document.getElementById('change_password_form').style.display='block'">Change</a></p>
                     <form id="change_password_form" style="display: none;" action="profile.php" method="post">
                         <label for="new_password">New Password:</label>
                         <input type="password" id="new_password" name="new_password">
